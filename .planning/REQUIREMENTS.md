@@ -178,4 +178,4 @@
 
 ---
 *Requirements defined: 28/10/2026*
-*Last updated: 28/10/2026 after initial definition*
+*Last updated: 28/10/2026 — traceability confirmada contra ROADMAP.md (48/48 requisitos mapeados)*
