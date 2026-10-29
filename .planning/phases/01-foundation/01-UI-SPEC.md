@@ -56,15 +56,15 @@ All text in Brazilian Portuguese. Monetary values always use IBM Plex Mono. All 
 
 | Role | Font | Size | Weight | Line Height | Usage |
 |------|------|------|--------|-------------|-------|
-| Display | Manrope | 28px | 700 (Bold) | 1.2 | Page titles (login screen heading only in Phase 1) |
+| Display | Manrope | 28px | 600 (SemiBold) | 1.2 | Page titles (login screen heading only in Phase 1) |
 | Heading | Manrope | 20px | 600 (SemiBold) | 1.3 | Section headings, nav group labels |
 | Body | Manrope | 16px | 400 (Regular) | 1.5 | Nav item labels, form labels, descriptions |
 | Label / Small | Manrope | 14px | 400 (Regular) | 1.4 | Input placeholder text, helper text, secondary labels |
-| Monetary | IBM Plex Mono | 16px | 500 (Medium) | 1.4 | All R$ values — reserved exclusively for this font |
+| Monetary | IBM Plex Mono | 16px | 400 (Regular) | 1.4 | All R$ values — reserved exclusively for this font |
 
 Rules:
 - Maximum 4 type sizes in Phase 1: 14, 16, 20, 28.
-- Maximum 3 weights: 400 (Regular), 600 (SemiBold), 700 (Bold).
+- Exactly 2 weights: 400 (Regular) and 600 (SemiBold). No other weights permitted.
 - **Never** use Manrope for monetary values. **Never** use IBM Plex Mono for anything other than monetary values.
 - Monetary format: `R$ 1.234,56` — no exceptions. Rendered via `formatBRL()` utility only.
 - Date format: `dd/mm/aaaa` — rendered via `formatDate()` utility only.
@@ -130,7 +130,7 @@ Source: spec.md §Visual, CONTEXT.md §Specific Ideas
 - Centered card on `#F3F5F7` background
 - Card: white, 16px border radius, `2xl` (48px) vertical padding, `xl` (32px) horizontal padding
 - Card max-width: 400px
-- Logo/app name "Duas Contas" above the form — Manrope 28px Bold, `#0F1B2D`
+- Logo/app name "Duas Contas" above the form — Manrope 28px SemiBold (600), `#0F1B2D`
 - Subtitle: Manrope 14px Regular, `#5B6675`
 
 **Form elements:**
@@ -277,6 +277,7 @@ No intermediate breakpoints needed in Phase 1.
 - Color is never the only differentiator — active nav item also has background change
 - All interactive elements meet 44px minimum touch target (height)
 - Focus ring: default browser/Radix focus ring preserved — do NOT suppress with `outline: none` globally
+- Password visibility toggle (lucide `Eye` / `EyeOff`): icon-only button must carry `aria-label="Mostrar senha"` when eye is visible (password hidden) and `aria-label="Ocultar senha"` when eye-off is visible (password shown)
 
 ---
 
