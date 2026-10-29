@@ -13,4 +13,7 @@ export default defineConfig({
     url: env("DATABASE_URL"),
     directUrl: env("DIRECT_URL"),
   },
+  seed: {
+    run: "npx tsx prisma/seed.ts",
+  },
 });
