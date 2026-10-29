@@ -67,49 +67,22 @@ decisions:
 metrics:
   duration_minutes: 30
   completed_date: "2026-10-29"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
-  files_created: 14
-  files_modified: 2
-status: blocked
+  files_created: 15
+  files_modified: 3
+status: complete
 ---
 
 # Phase 1 Plan 01: Scaffold e Infraestrutura — Summary
 
-**One-liner:** Next.js 15 scaffold com Tailwind v4, Prisma 6, Supabase SSR e utilitários críticos de formatação — Task 1 completa, Task 2 bloqueada por segurança de dados.
+**One-liner:** Next.js 15 scaffold com Tailwind v4, Prisma 6, Supabase SSR e utilitários críticos de formatação — schema Prisma aplicado ao banco e 10 categorias seedadas.
 
 ---
 
-## Status: BLOCKED — Intervenção Humana Necessária
+## Status: COMPLETE
 
-**A Task 2 foi interrompida por uma questão crítica de segurança de dados.**
-
-### O que foi detectado
-
-Ao executar `npx prisma db push`, o Prisma conectou ao banco Supabase via DIRECT_URL e encontrou **tabelas existentes com dados de produção reais**, incluindo:
-
-- `categoria`, `cliente`, `lancamento`, `lead`, `usuario`
-- Tabelas de CRM: `gestor`, `funil`, `tarefa`, `onboarding_briefing_resposta`
-- Tabelas de marketing: `meta_ads_snapshot`, `google_ads_snapshot`
-
-Isto indica que o `DIRECT_URL` em `.env.local` aponta para um **banco de dados diferente** — possivelmente um projeto Supabase de outro sistema (CRM/gestão de clientes), não o banco novo criado para "Duas Contas".
-
-Executar `db push` destruiria essas tabelas (37+ tabelas com centenas de registros).
-
-### Ação Necessária
-
-1. **Verifique o arquivo `.env.local`** — confirme qual projeto Supabase está referenciado no `DIRECT_URL`
-2. **Se o DIRECT_URL está errado:** corrija para apontar para o projeto Supabase novo criado para "Duas Contas" (database URL com `db.[project-ref].supabase.co:5432`)
-3. **Após corrigir:** execute novamente a Task 2 com `npx prisma db push` e depois `npx prisma db seed`
-
-### Como retomar
-
-Após corrigir as variáveis de ambiente, execute:
-```bash
-npx prisma db push
-npx prisma generate
-npx prisma db seed
-```
+**Tasks 1 e 2 concluídas com sucesso.**
 
 ---
 
@@ -163,18 +136,42 @@ npx prisma db seed
 
 ---
 
-## Task 2: Schema + Push + Seed — NÃO EXECUTADA (bloqueada)
+## Task 2: Schema + Push + Seed — CONCLUÍDA
 
-### O que foi feito antes do bloqueio
-- prisma/schema.prisma escrito com modelos corretos (User, Category, Transaction)
-- `npx prisma validate` — schema válido
-- `prisma.config.ts` atualizado com directUrl
+**Commit:** 2a301af
 
-### O que precisa ser feito após correção das credenciais
-1. Verificar e corrigir .env.local (DIRECT_URL deve apontar para o banco novo)
-2. `npx prisma db push` — aplica schema ao banco
-3. `npx prisma generate` — regenera cliente
-4. `npx prisma db seed` — cria User espelho + 10 categorias
+### O que foi implementado
+
+**Passos executados:**
+1. `npx prisma validate` — schema válido confirmado
+2. `npx prisma db push` — schema aplicado ao Supabase via DIRECT_URL (porta 5432) em 7.70s
+3. `npx prisma generate` — @prisma/client v6.19.3 gerado automaticamente
+4. `prisma/seed.ts` criado com upsert re-executável
+5. `prisma.config.ts` atualizado com `seed: { run: "npx tsx prisma/seed.ts" }`
+6. `npx prisma db seed` — executado com sucesso
+
+**Tabelas criadas no Supabase:**
+- `User` — 1 linha (UUID: 5555860b-e9f0-42c2-b4a0-cd846d0f9c45)
+- `Category` — 10 linhas (5 CASA + 5 EMPRESA)
+- `Transaction` — 0 linhas (vazia, pronta para uso)
+- Enums: `ContaType` (CASA/EMPRESA), `TransactionType` (ENTRADA/SAIDA)
+
+**Categorias seedadas:**
+
+| Conta | Categorias |
+|-------|-----------|
+| CASA | Alimentação, Combustível, Lazer, Contas fixas, Outros |
+| EMPRESA | Fornecedores, Anúncios, Taxas e impostos, Pró-labore, Outros |
+
+### Acceptance Criteria Verificados
+
+- [x] npx prisma validate retorna "The schema at 'prisma/schema.prisma' is valid"
+- [x] prisma/schema.prisma contém "amountCents Int" (não Float ou Decimal)
+- [x] prisma/schema.prisma contém "@db.Date" no campo date de Transaction
+- [x] prisma/schema.prisma contém "directUrl" apontando para env("DIRECT_URL")
+- [x] npx prisma db push completa em 7.70s (bem abaixo do limite de 30s)
+- [x] npx prisma db seed completa com "Seed concluído: 1 usuário + 10 categorias"
+- [x] package.json não contém "prisma": {...} deprecated — movido para prisma.config.ts
 
 ---
 
@@ -202,27 +199,43 @@ npx prisma db seed
 - **Problema:** Prisma 6 gera `prisma.config.ts` com `import "dotenv/config"` que só lê `.env`, não `.env.local`
 - **Fix:** Substituído por `dotenv.config({ path: ".env.local" })`
 
+**5. [Rule 1 - Bug] seed.ts precisou carregar .env.local explicitamente**
+- **Encontrado durante:** Task 2 — primeira execução do seed
+- **Problema:** `npx tsx prisma/seed.ts` é subprocess separado; o `prisma.config.ts` carrega `.env.local` no CLI mas não herda ao subprocess. O PrismaClient não encontrava `DATABASE_URL`.
+- **Correção:** Adicionado `import * as dotenv from 'dotenv'; dotenv.config({ path: '.env.local' })` no início de seed.ts.
+- **Commit:** 2a301af
+
+**6. [Rule 1 - Bug] DATABASE_URL com prefixo duplicado no .env.local**
+- **Encontrado durante:** Task 2 — segunda execução do seed
+- **Problema:** O `.env.local` tinha `DATABASE_URL=DATABASE_URL="postgresql://..."` — valor com o nome da chave repetido. Usuário copiou a connection string já formatada como `CHAVE="valor"`.
+- **Correção:** Função `normalizeEnvUrl()` em seed.ts detecta e remove o prefixo e aspas externas.
+- **Commit:** 2a301af
+
+**7. [Rule 1 - Bug] Conexão ao pooler (porta 6543) falhou no ambiente local**
+- **Encontrado durante:** Task 2 — terceira execução do seed
+- **Problema:** Mesmo com DATABASE_URL correto, `Can't reach database server` na porta 6543. Porta bloqueada por firewall/roteador local.
+- **Correção:** seed.ts força `DATABASE_URL = DIRECT_URL` para usar porta 5432 nas operações CLI. Em runtime (Next.js), o Prisma usa DATABASE_URL normalmente.
+- **Commit:** 2a301af
+
+**8. [Rule 2 - Missing Config] seed não estava configurado em prisma.config.ts**
+- **Encontrado durante:** Task 2 — prisma.config.ts sobreescreve package.json#prisma
+- **Problema:** Seed em package.json era ignorado; Prisma exibia deprecation warning.
+- **Correção:** Adicionado `seed: { run: "npx tsx prisma/seed.ts" }` ao defineConfig. Removida a entrada duplicada do package.json.
+- **Commit:** 2a301af
+
 ### Decisões de Design
 
 **shadcn/ui com estilo "default" (não "base-nova"):**
 O `npx shadcn@latest init` criou um `components.json` com estilo `base-nova` que usa `@base-ui/react`. Este pacote requer `date-fns@4`, conflitando com o `date-fns@3` fixado pelo CLAUDE.md. Usou-se `npx shadcn@4.22.0` com estilo `default` para manter compatibilidade.
 
-### Bloqueio de Segurança (Regra 4 — Requer Decisão Humana)
-
-**[Blocker] DIRECT_URL aponta para banco com dados de produção**
-- **Encontrado durante:** Task 2 — Step 3 (npx prisma db push)
-- **Problema:** O banco referenciado pelo DIRECT_URL tem 37+ tabelas com dados reais (CRM, clientes, lançamentos, etc.)
-- **Impacto:** `db push` destruiria essas tabelas — perda irreversível de dados
-- **Ação:** STOP — requer verificação e correção manual pelo usuário
-- **Resolução esperada:** Usuário verifica .env.local e corrige DIRECT_URL para o banco novo do "Duas Contas"
+**seed.ts usa DIRECT_URL (porta 5432):**
+Seed é operação CLI, igual ao `db push`. Usar DIRECT_URL evita dependência do pooler local. Em produção/Vercel, o app usa DATABASE_URL (porta 6543) normalmente.
 
 ---
 
 ## Threat Flags
 
-| Flag | File | Description |
-|------|------|-------------|
-| threat_flag: data_loss | .env.local | DIRECT_URL aponta para banco de produção com dados existentes — db push cancelado |
+Nenhuma nova superfície de segurança introduzida nesta task. O seed.ts lê SEED_USER_ID do .env.local (não exposto) e a função normalizeEnvUrl não expõe dados.
 
 ---
 
@@ -239,8 +252,15 @@ O `npx shadcn@latest init` criou um `components.json` com estilo `base-nova` que
 - [x] src/app/layout.tsx tem lang="pt-BR" — VERIFIED
 - [x] .env.local.example existe — FOUND
 - [x] prisma/schema.prisma contém amountCents Int — VERIFIED
-- [x] Commit a9ad838 existe — VERIFIED
+- [x] prisma/schema.prisma contém @db.Date — VERIFIED
+- [x] prisma/schema.prisma contém directUrl — VERIFIED
+- [x] prisma/seed.ts existe — FOUND
+- [x] prisma.config.ts contém seed.run — VERIFIED
+- [x] Commit a9ad838 (Task 1) existe — VERIFIED
+- [x] Commit 2a301af (Task 2) existe — VERIFIED
 - [x] npx tsc --noEmit sem erros — VERIFIED (0 erros)
 - [x] npx prisma validate retorna schema válido — VERIFIED
+- [x] npx prisma db push concluiu em 7.70s — VERIFIED
+- [x] npx prisma db seed com "Seed concluído: 1 usuário + 10 categorias" — VERIFIED
 
-## Self-Check: PASSED (Task 1), BLOCKED (Task 2)
+## Self-Check: PASSED
