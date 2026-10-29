@@ -1,0 +1,21 @@
+/* src/app/globals.css */
+@import "tailwindcss";
+
+@theme inline {
+  /* Design tokens from spec.md §Visual */
+  --color-bg: #F3F5F7;
+  --color-card: #FFFFFF;
+  --color-border: #E3E7EC;
+  --color-text-primary: #0F1B2D;
+  --color-text-secondary: #5B6675;
+  --color-casa: #1D4ED8;
+  --color-casa-light: #DCEBFF;
+  --color-empresa: #B45309;
+  --color-empresa-light: #FDEBD8;
+  --color-positive: #0F766E;
+  --color-warning: #8A3A06;
+
+  /* Fonts wired from next/font CSS variables */
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-ibm-plex-mono);
+}
