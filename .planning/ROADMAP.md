@@ -33,7 +33,10 @@
   3. Todos os valores monetários são armazenados como inteiros em centavos no banco (nunca Float)
   4. Datas são armazenadas como DATE no Postgres e exibidas em dd/mm/aaaa sem deslocamento de fuso horário
   5. `formatBRL()` e `formatDate()` existem como utilitários únicos e são usados em toda exibição de valores
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold + infraestrutura + schema Prisma + seed de categorias
+- [ ] 01-02-PLAN.md — Login, middleware, shell de navegação e deploy na Vercel
 **UI hint**: yes
 
 ### Phase 2: Core CRUD
@@ -137,7 +140,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/2 | Not started | - |
 | 2. Core CRUD | 0/? | Not started | - |
 | 3. Planning | 0/? | Not started | - |
 | 4. Empresa | 0/? | Not started | - |
