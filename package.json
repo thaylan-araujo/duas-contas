@@ -31,6 +31,9 @@
     "zod": "^3.25.76",
     "zustand": "^5.0.16"
   },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@prisma/client": "^6.19.3",
