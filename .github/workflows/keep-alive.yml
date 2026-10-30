@@ -1,0 +1,15 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 9 */3 * *'  # A cada 3 dias às 9h UTC — previne auto-pause após 7 dias de inatividade
+  workflow_dispatch:  # Permite disparo manual
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping app
+        # Faz GET em /api/health para manter o Supabase free tier ativo
+        # Falha silenciosa — não bloqueia outras workflows
+        run: curl -sf ${{ secrets.VERCEL_URL }}/api/health || echo "Health check skipped — VERCEL_URL não configurado ou servidor indisponível"
