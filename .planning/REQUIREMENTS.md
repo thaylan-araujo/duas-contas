@@ -42,6 +42,17 @@
 - [x] **DASH-01**: Usuário vê painel da Casa com cartões: teto do mês, total planejado, folga e gasto até hoje
 - [x] **DASH-02**: Usuário vê barras de distribuição por categoria e gráfico de gastos semana a semana
 
+### Fundação Multi-Empresa (Fase 4 — formalizado 25/11/2026)
+
+Requisitos da Fatia 1 (fundação) do bloco multi-empresa. Ver `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md`.
+
+- [ ] **EMPF-01**: Entidade Empresa (nome, tipo, cor) e migração do modelo Casa/Empresa para Casa + empresaId, preservando os dados da Casa
+- [ ] **EMPF-02**: CRUD de empresa (criar/editar/remover) com proteção de exclusão quando houver lançamentos vinculados
+- [ ] **EMPF-03**: Categorias de receita/custo por empresa, com conjunto padrão semeado por tipo
+- [ ] **EMPF-04**: Seed re-executável das 3 empresas (Elite Juris, Achadinhos, Infoproduto)
+- [ ] **EMPF-05**: Seletor dropdown "Casa + empresas" no topo + contexto ativo generalizado (Casa | empresa)
+- [ ] **EMPF-06**: Lançamentos e visão geral passam a funcionar pela empresa selecionada
+
 ### Canais e Fluxo de Caixa (Empresa)
 
 - [ ] **CHAN-01**: Usuário pode registrar comissões do mês por canal (Dicas da Liz / Shopee, Achadinhos da Mel / Shein)
@@ -142,6 +153,12 @@
 | META-02 | Fase 3 | Entregue |
 | DASH-01 | Fase 2 | Pendente |
 | DASH-02 | Fase 2 | Pendente |
+| EMPF-01 | Fase 4 | Pendente |
+| EMPF-02 | Fase 4 | Pendente |
+| EMPF-03 | Fase 4 | Pendente |
+| EMPF-04 | Fase 4 | Pendente |
+| EMPF-05 | Fase 4 | Pendente |
+| EMPF-06 | Fase 4 | Pendente |
 | CHAN-01 | Fase 4 | Pendente |
 | CHAN-02 | Fase 4 | Pendente |
 | CHAN-03 | Fase 4 | Pendente |

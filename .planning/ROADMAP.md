@@ -112,7 +112,7 @@ Plans:
 **Mode:** mvp
 **Depends on**: Phase 3
 **Design**: `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md` (fonte autoritativa; leitura obrigatória antes de discutir/planejar esta fase)
-**Requirements**: CHAN-01, CHAN-02, CHAN-03, CHAN-04, CHAN-05, DIV-01, DIV-02, DIV-03, DIV-04, DIV-05, DIV-06, DASH-03, DASH-04 (reinterpretados no contexto multi-empresa; novos requisitos EMP-*/FAM-* a formalizar no planejamento)
+**Requirements**: CHAN-01, CHAN-02, CHAN-03, CHAN-04, CHAN-05, DIV-01, DIV-02, DIV-03, DIV-04, DIV-05, DIV-06, DASH-03, DASH-04 (reinterpretados no contexto multi-empresa; EMPF-01, EMPF-02, EMPF-03, EMPF-04, EMPF-05, EMPF-06 (Fatia 1 - fundação, formalizados); CHAN-*/DIV-*/DASH-03/04 nas fatias seguintes)
 **Nota de reorganização (25/11/2026)**: substitui a antiga "Fase 4: Empresa" (uma empresa). Provável divisão em sub-fases no planejamento: (4a) fundação multi-empresa — modelo de dados Casa + N empresas, CRUD de empresas, seletor; (4b) P&L por empresa; (4c) pró-labore multi-origem → renda familiar; (4d) consolidado + projeção. Multiusuário/orçamento por pessoa ficam adiados para a cauda do roadmap.
 **Success Criteria** (what must be TRUE):
 
