@@ -1,10 +1,11 @@
 ---
 phase: 3
 slug: planning
-status: draft
+status: approved
 shadcn_initialized: true
 preset: "shadcn style default (Radix UI) — herdado da Fase 1/2"
 created: 2026-11-25
+reviewed_at: 2026-11-25
 ---
 
 # Phase 3 — UI Design Contract: Planejamento e Semanas da Casa
