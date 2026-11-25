@@ -107,6 +107,37 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 3.5: Casa — Acompanhamento (rework)
+
+**Goal**: As a pessoa que lança as despesas da Casa no dia a dia, I want to ver o dinheiro do mês diminuir, o gasto por categoria contra um teto de referência e o gasto semanal somado sozinho, so that eu acompanhe a Casa sem manter um plano manual.
+**Mode:** mvp
+**Depends on**: Phase 3
+**Design**: `docs/superpowers/specs/2026-11-25-casa-acompanhamento-design.md` (fonte autoritativa)
+**Requirements**: CASA-R-01, CASA-R-02, CASA-R-03, CASA-R-04, CASA-R-05 (descritivos desta rodada de rework)
+**Success Criteria** (what must be TRUE):
+
+  1. Usuário vê a barra "Dinheiro do mês" (MonthlyBudget.ceilingCents, editável inline) e o restante = dinheiro do mês − despesas da Casa no mês
+  2. Categorias variáveis da Casa com teto definido mostram "gastei X de Y" como referência (nunca bloqueia); sem teto mostram só o gasto
+  3. Gasto semanal (1–7/8–14/15–21/22–fim) por categoria é calculado automaticamente dos lançamentos, sem digitação
+  4. PlanItem e WeeklySpend e os componentes do planejamento semanal manual foram removidos
+  5. Dashboard da Casa mostra "Dinheiro do mês" / "Restante do mês" / "Gasto até hoje" e mantém o gráfico de gastos reais por semana
+
+**Plans**: 3 plans
+Plans:
+**Wave 0**
+
+- [ ] 03b-01-PLAN.md — Backup (checkpoint bloqueante) + migração destrutiva: remove PlanItem/WeeklySpend, cria CategoryBudget
+
+**Wave 1** *(blocked on Wave 0 completion)*
+
+- [ ] 03b-02-PLAN.md — Núcleo do acompanhamento: funções puras testadas + service/loader/actions/schema + tela /planejamento (barra do mês, tetos por categoria, semanal automático) + remoção dos componentes do plano manual
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03b-03-PLAN.md — Dashboard da Casa (Dinheiro do mês / Restante do mês / Gasto até hoje) + verificação ponta a ponta
+
+**UI hint**: yes
+
 ### Phase 4: Empresas (multi) e Renda Familiar
 
 **Goal**: Usuário gerencia **N empresas independentes** (hoje Elite Juris, Achadinhos, Infoproduto), cada uma com P&L próprio (receitas − custos categorizados = lucro); o pró-labore de cada empresa alimenta a **renda familiar**; e o usuário vê o **consolidado das empresas** e uma **projeção** de quanto vai sobrar, além das dívidas e DAS **por empresa**.
@@ -216,6 +247,7 @@ Plans:
 | 1. Foundation | 1/2 | In Progress|  |
 | 2. Core CRUD | 4/4 | Complete   | 2026-11-24 |
 | 3. Planning | 4/4 | Complete   | 2026-11-25 |
+| 3.5. Casa — Acompanhamento (rework) | 0/3 | Planned | - |
 | 4. Empresa | 0/? | Not started | - |
 | 5. Calendário e Alertas | 0/? | Not started | - |
 | 6. Relatório Mensal | 0/? | Not started | - |
