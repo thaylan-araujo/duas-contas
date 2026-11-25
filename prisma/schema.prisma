@@ -20,10 +20,11 @@ enum TransactionType {
 }
 
 model User {
-  id           String        @id
-  categories   Category[]
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
+  id              String          @id
+  categories      Category[]
+  transactions    Transaction[]
+  monthlyBudgets  MonthlyBudget[]
+  createdAt       DateTime        @default(now())
 }
 
 model Category {
@@ -33,6 +34,7 @@ model Category {
   user         User          @relation(fields: [userId], references: [id])
   userId       String
   transactions Transaction[]
+  isDefault    Boolean       @default(false)
   createdAt    DateTime      @default(now())
 
   @@unique([name, account, userId])
@@ -50,7 +52,20 @@ model Transaction {
   user        User            @relation(fields: [userId], references: [id])
   userId      String
   origin      String          @default("manual")
+  pairId      String?
   notes       String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+}
+
+model MonthlyBudget {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  month        String
+  ceilingCents Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, month])
 }

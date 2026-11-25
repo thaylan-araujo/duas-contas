@@ -13,12 +13,12 @@
 
 ### Contas e Lançamentos
 
-- [ ] **LANC-01**: Usuário pode criar lançamento com data, descrição, valor, tipo (entrada/saída), categoria e conta (Casa ou Empresa)
-- [ ] **LANC-02**: Usuário pode editar qualquer campo de um lançamento existente
-- [ ] **LANC-03**: Usuário pode excluir um lançamento
-- [ ] **LANC-04**: Usuário pode listar lançamentos filtrados por conta e mês
-- [ ] **LANC-05**: Usuário pode registrar transferência de pró-labore da Empresa para a Casa (cria saída na Empresa e entrada na Casa em uma única operação)
-- [ ] **LANC-06**: Usuário pode criar, editar e excluir categorias além das categorias padrão
+- [x] **LANC-01**: Usuário pode criar lançamento com data, descrição, valor, tipo (entrada/saída), categoria e conta (Casa ou Empresa)
+- [x] **LANC-02**: Usuário pode editar qualquer campo de um lançamento existente
+- [x] **LANC-03**: Usuário pode excluir um lançamento
+- [x] **LANC-04**: Usuário pode listar lançamentos filtrados por conta e mês
+- [x] **LANC-05**: Usuário pode registrar transferência de pró-labore da Empresa para a Casa (cria saída na Empresa e entrada na Casa em uma única operação)
+- [x] **LANC-06**: Usuário pode criar, editar e excluir categorias além das categorias padrão
 - [ ] **LANC-07**: Usuário pode registrar lançamento na tela de Lançamento Rápido (otimizada para celular: botões grandes, teclado numérico no campo de valor, mostra saldo restante na categoria após escolher)
 
 ### Planejamento e Semanas (Casa)
@@ -39,8 +39,8 @@
 
 ### Dashboard (Casa)
 
-- [ ] **DASH-01**: Usuário vê painel da Casa com cartões: teto do mês, total planejado, folga e gasto até hoje
-- [ ] **DASH-02**: Usuário vê barras de distribuição por categoria e gráfico de gastos semana a semana
+- [x] **DASH-01**: Usuário vê painel da Casa com cartões: teto do mês, total planejado, folga e gasto até hoje
+- [x] **DASH-02**: Usuário vê barras de distribuição por categoria e gráfico de gastos semana a semana
 
 ### Canais e Fluxo de Caixa (Empresa)
 
@@ -172,6 +172,7 @@
 | IMP-06 | Fase 7 | Pendente |
 
 **Coverage:**
+
 - v1 requirements: 48 total
 - Mapeados para fases: 48
 - Não mapeados: 0 ✓

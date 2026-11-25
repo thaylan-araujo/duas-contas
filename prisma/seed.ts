@@ -66,7 +66,7 @@ async function main() {
         },
       },
       update: {},
-      create: { name, account: ContaType.CASA, userId: SUPABASE_USER_ID },
+      create: { name, account: ContaType.CASA, userId: SUPABASE_USER_ID, isDefault: true },
     })
     console.log(`Categoria CASA criada/atualizada: ${name}`)
   }
@@ -89,7 +89,7 @@ async function main() {
         },
       },
       update: {},
-      create: { name, account: ContaType.EMPRESA, userId: SUPABASE_USER_ID },
+      create: { name, account: ContaType.EMPRESA, userId: SUPABASE_USER_ID, isDefault: true },
     })
     console.log(`Categoria EMPRESA criada/atualizada: ${name}`)
   }

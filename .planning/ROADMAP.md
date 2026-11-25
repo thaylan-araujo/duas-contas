@@ -10,7 +10,7 @@
 ## Phases
 
 - [ ] **Phase 1: Foundation** - Infraestrutura, autenticação e utilitários críticos antes de qualquer feature
-- [ ] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa
+- [x] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa (completed 2026-11-24)
 - [ ] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas
 - [ ] **Phase 4: Empresa** - Canais P&L, dívidas, fluxo de caixa e dashboard da Empresa
 - [ ] **Phase 5: Calendário e Alertas** - Calendário de vencimentos com notificações push
@@ -58,7 +58,21 @@ Plans:
   4. Usuário pode registrar uma transferência de pró-labore: uma única operação cria saída na Empresa e entrada na Casa atomicamente
   5. Usuário vê o dashboard da Casa com teto do mês, total planejado, folga e gasto até hoje, além de barras por categoria e gráfico semanal
 
-**Plans**: TBD
+**Plans**: 4/4 plans complete
+Plans:
+**Wave 1**
+
+- [x] 02-01-PLAN.md — Schema migration (pairId, MonthlyBudget, isDefault) + package installs
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 02-02-PLAN.md — Transaction CRUD slice (list, Sheet form, delete Dialog, filters)
+- [x] 02-04-PLAN.md — Casa dashboard (4 cards, inline ceiling editor, spending bars, Recharts weekly chart)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 02-03-PLAN.md — Pró-labore atomic pair + category management (create inline, Gerenciar Sheet)
+
 **UI hint**: yes
 
 ### Phase 3: Planning
@@ -167,7 +181,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/2 | In Progress|  |
-| 2. Core CRUD | 0/? | Not started | - |
+| 2. Core CRUD | 4/4 | Complete   | 2026-11-24 |
 | 3. Planning | 0/? | Not started | - |
 | 4. Empresa | 0/? | Not started | - |
 | 5. Calendário e Alertas | 0/? | Not started | - |
