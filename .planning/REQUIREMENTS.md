@@ -23,19 +23,19 @@
 
 ### Planejamento e Semanas (Casa)
 
-- [ ] **PLAN-01**: Usuário pode definir o teto de gastos do mês (padrão R$ 3.000)
-- [ ] **PLAN-02**: Usuário pode criar itens no plano do mês com nome, grupo, valor por vez e número de repetições; sistema calcula total e % do teto
-- [ ] **PLAN-03**: Usuário vê resumo do plano com total planejado, folga (ou quanto passou do teto) e barra dividida por grupo
-- [ ] **PLAN-04**: Usuário vê 4 cartões semanais (sem 1–7, 8–14, 15–21, 22–fim) com itens planejados para cada semana, campo "Gastei R$" e restante por item e por semana
-- [ ] **PLAN-05**: Usuário pode copiar o plano do mês anterior com um botão
-- [ ] **PLAN-06**: Contas fixas cadastradas entram automaticamente no plano do mês no grupo Contas fixas, sem redigitar
+- [x] **PLAN-01**: Usuário pode definir o teto de gastos do mês (padrão R$ 3.000)
+- [x] **PLAN-02**: Usuário pode criar itens no plano do mês com nome, grupo, valor por vez e número de repetições; sistema calcula total e % do teto
+- [x] **PLAN-03**: Usuário vê resumo do plano com total planejado, folga (ou quanto passou do teto) e barra dividida por grupo
+- [x] **PLAN-04**: Usuário vê 4 cartões semanais (sem 1–7, 8–14, 15–21, 22–fim) com itens planejados para cada semana, campo "Gastei R$" e restante por item e por semana
+- [x] **PLAN-05**: Usuário pode copiar o plano do mês anterior com um botão
+- [x] **PLAN-06**: Contas fixas cadastradas entram automaticamente no plano do mês no grupo Contas fixas, sem redigitar
 
 ### Contas Fixas, Gastos Anuais e Metas (Casa)
 
-- [ ] **FIXA-01**: Usuário pode cadastrar conta fixa com nome, dia de vencimento, valor e flag de débito automático
-- [ ] **FIXA-02**: Usuário pode cadastrar gasto anual (IPVA, licenciamento, manutenção, presentes) com valor total e mês de vencimento; sistema calcula quanto guardar por mês
-- [ ] **META-01**: Usuário pode criar meta de poupança com nome, valor da meta, valor guardado e prazo; sistema mostra barra de progresso e quanto guardar por mês
-- [ ] **META-02**: Sistema começa com metas "Reserva de emergência" e "Caixinha do carro" pré-cadastradas
+- [x] **FIXA-01**: Usuário pode cadastrar conta fixa com nome, dia de vencimento, valor e flag de débito automático
+- [x] **FIXA-02**: Usuário pode cadastrar gasto anual (IPVA, licenciamento, manutenção, presentes) com valor total e mês de vencimento; sistema calcula quanto guardar por mês
+- [x] **META-01**: Usuário pode criar meta de poupança com nome, valor da meta, valor guardado e prazo; sistema mostra barra de progresso e quanto guardar por mês
+- [x] **META-02**: Sistema começa com metas "Reserva de emergência" e "Caixinha do carro" pré-cadastradas
 
 ### Dashboard (Casa)
 
@@ -130,16 +130,16 @@
 | LANC-05 | Fase 2 | Pendente |
 | LANC-06 | Fase 2 | Pendente |
 | LANC-07 | Fase 8 | Pendente |
-| PLAN-01 | Fase 3 | Pendente |
-| PLAN-02 | Fase 3 | Pendente |
-| PLAN-03 | Fase 3 | Pendente |
-| PLAN-04 | Fase 3 | Pendente |
-| PLAN-05 | Fase 3 | Pendente |
-| PLAN-06 | Fase 3 | Pendente |
-| FIXA-01 | Fase 3 | Pendente |
-| FIXA-02 | Fase 3 | Pendente |
-| META-01 | Fase 3 | Pendente |
-| META-02 | Fase 3 | Pendente |
+| PLAN-01 | Fase 3 | Entregue |
+| PLAN-02 | Fase 3 | Entregue |
+| PLAN-03 | Fase 3 | Entregue |
+| PLAN-04 | Fase 3 | Entregue |
+| PLAN-05 | Fase 3 | Entregue |
+| PLAN-06 | Fase 3 | Entregue |
+| FIXA-01 | Fase 3 | Entregue |
+| FIXA-02 | Fase 3 | Entregue |
+| META-01 | Fase 3 | Entregue |
+| META-02 | Fase 3 | Entregue |
 | DASH-01 | Fase 2 | Pendente |
 | DASH-02 | Fase 2 | Pendente |
 | CHAN-01 | Fase 4 | Pendente |

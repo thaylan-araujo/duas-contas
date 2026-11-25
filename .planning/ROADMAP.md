@@ -11,7 +11,7 @@
 
 - [ ] **Phase 1: Foundation** - Infraestrutura, autenticação e utilitários críticos antes de qualquer feature
 - [x] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa (completed 2026-11-24)
-- [ ] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas
+- [x] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas (completed 2026-11-25)
 - [ ] **Phase 4: Empresa** - Canais P&L, dívidas, fluxo de caixa e dashboard da Empresa
 - [ ] **Phase 5: Calendário e Alertas** - Calendário de vencimentos com notificações push
 - [ ] **Phase 6: Relatório Mensal** - Relatório completo e exportação em PDF
@@ -93,16 +93,16 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Fundação: 5 modelos Prisma + Vitest + extração de src/lib/weeks.ts (testes de faixa de semana) + shadcn Checkbox/Switch/Progress/Table
+- [x] 03-01-PLAN.md — Fundação: 5 modelos Prisma + Vitest + extração de src/lib/weeks.ts (testes de faixa de semana) + shadcn Checkbox/Switch/Progress/Table
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-02-PLAN.md — Planejamento (core): tabela de itens + Resumo (teto/Planejado/Folga + barra segmentada) + pré-preenchimento do 1º mês + Copiar plano do mês anterior
-- [ ] 03-04-PLAN.md — Contas fixas, gastos do ano ÷12 e metas (3 cards, CRUD, seed de 2 metas, barra de progresso)
+- [x] 03-02-PLAN.md — Planejamento (core): tabela de itens + Resumo (teto/Planejado/Folga + barra segmentada) + pré-preenchimento do 1º mês + Copiar plano do mês anterior
+- [x] 03-04-PLAN.md — Contas fixas, gastos do ano ÷12 e metas (3 cards, CRUD, seed de 2 metas, barra de progresso)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 03-03-PLAN.md — Cartões semanais com "Gastei R$" automático + override, contas fixas derivadas no plano e integração do dashboard (Planejado/Folga)
+- [x] 03-03-PLAN.md — Cartões semanais com "Gastei R$" automático + override, contas fixas derivadas no plano e integração do dashboard (Planejado/Folga)
 
 **UI hint**: yes
 
@@ -196,7 +196,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/2 | In Progress|  |
 | 2. Core CRUD | 4/4 | Complete   | 2026-11-24 |
-| 3. Planning | 0/4 | Planned | - |
+| 3. Planning | 4/4 | Complete   | 2026-11-25 |
 | 4. Empresa | 0/? | Not started | - |
 | 5. Calendário e Alertas | 0/? | Not started | - |
 | 6. Relatório Mensal | 0/? | Not started | - |
