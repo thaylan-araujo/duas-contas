@@ -26,7 +26,10 @@ export const empresaSchema = z.object({
     .min(1, 'O nome é obrigatório.')
     .max(60, 'Máximo 60 caracteres'),
   tipo: z.enum(EMPRESA_TIPOS, { message: 'Selecione um tipo.' }),
-  cor: z.enum(EMPRESA_CORES, { message: 'Selecione uma cor.' }).default('laranja'),
+  // Sem .default() aqui: o default é fornecido pelo defaultValues do form. O
+  // .default() tornaria o tipo de ENTRADA do zod opcional (cor?) enquanto a
+  // SAÍDA é obrigatória, quebrando a inferência do zodResolver no useForm.
+  cor: z.enum(EMPRESA_CORES, { message: 'Selecione uma cor.' }),
 })
 
 export type EmpresaFormData = z.infer<typeof empresaSchema>
