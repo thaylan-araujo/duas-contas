@@ -171,6 +171,15 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [x] 04-04-PLAN.md — ContaSelector (dropdown Casa + empresas) global + lançamentos/visão geral por contexto + verificação ponta a ponta
+
+#### Fatia 2 — P&L por empresa (`/canais`)
+
+**Plans:** 1 plan (VISÃO derivada sobre lançamentos; sem migração, sem modelo novo)
+Plans:
+**Wave 1**
+
+- [ ] 04b-01-PLAN.md — P&L da empresa ativa em `/canais`: funções puras testadas (bruto/líquido/lucro + agrupamento por categoria) + service/loader empresaId-aware + tela (cards + listas de receitas/custos por categoria) + placeholder da Casa + verificação ponta a ponta
+
 **UI hint**: yes
 
 ### Phase 5: Calendário e Alertas
