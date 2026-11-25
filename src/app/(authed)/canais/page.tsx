@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma'
 import { loadPnlData } from './_lib/loader'
 import { PnlCards } from './_components/PnlCards'
 import { CategoryBreakdownList } from './_components/CategoryBreakdownList'
+import { CanaisPlaceholder } from './_components/CanaisPlaceholder'
 
 interface PageProps {
   searchParams: Promise<{ month?: string; empresaId?: string }>
@@ -39,18 +40,7 @@ export default async function CanaisPage({ searchParams }: PageProps) {
 
   // Ramo Casa / empresa inválida: placeholder (não cards de P&L zerados).
   if (!empresa) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-2 p-4 text-center">
-        <h1 className="text-[20px] font-semibold text-text-primary">
-          Canais e caixa
-        </h1>
-        <p className="text-base text-text-secondary max-w-md">
-          Esta é uma tela de empresa. Selecione uma empresa no seletor de conta
-          (ou crie a primeira em Gerenciar empresas) para ver o faturamento e o
-          lucro do mês.
-        </p>
-      </div>
-    )
+    return <CanaisPlaceholder />
   }
 
   const {
