@@ -2,8 +2,15 @@
 // Unit tests for the pure plan calc functions + the Zod plan item schema.
 // No Prisma here — these cover PLAN-02 (total/%) and PLAN-03 (folga/acima).
 import { describe, it, expect } from 'vitest'
-import { countWeeks, computePlanSummary, type PlanRow } from './service'
-import { planItemSchema } from './schema'
+import {
+  countWeeks,
+  computePlanSummary,
+  resolveGastei,
+  computeWeekRemaining,
+  fixedAccountsAsRows,
+  type PlanRow,
+} from './service'
+import { planItemSchema, weeklySpendSchema } from './schema'
 
 describe('countWeeks', () => {
   it('counts the number of marked weeks (D-01)', () => {
@@ -54,6 +61,94 @@ describe('computePlanSummary', () => {
     expect(summary.totalPlanejado).toBe(0)
     expect(summary.folga).toBe(300_000)
     expect(summary.acima).toBe(false)
+  })
+})
+
+describe('resolveGastei', () => {
+  it('manual override takes precedence over the auto sum (D-02)', () => {
+    expect(resolveGastei({ manualCents: 500, autoCents: 1200 })).toBe(500)
+  })
+
+  it('an explicit 0 override still wins over the auto sum (Pitfall 4)', () => {
+    expect(resolveGastei({ manualCents: 0, autoCents: 1200 })).toBe(0)
+  })
+
+  it('null override → falls back to the auto sum', () => {
+    expect(resolveGastei({ manualCents: null, autoCents: 1200 })).toBe(1200)
+  })
+
+  it('undefined override → falls back to the auto sum', () => {
+    expect(resolveGastei({ manualCents: undefined, autoCents: 1200 })).toBe(1200)
+  })
+})
+
+describe('computeWeekRemaining', () => {
+  it('sobra = planejado − gastei', () => {
+    expect(computeWeekRemaining(10_000, 4_000)).toBe(6_000)
+  })
+
+  it('is negative when overspent', () => {
+    expect(computeWeekRemaining(10_000, 15_000)).toBe(-5_000)
+  })
+
+  it('is 0 when exactly spent', () => {
+    expect(computeWeekRemaining(10_000, 10_000)).toBe(0)
+  })
+})
+
+describe('fixedAccountsAsRows', () => {
+  it('maps a fixed account to a read-only derived row in the "Contas fixas" group (D-05/PLAN-06)', () => {
+    const rows = fixedAccountsAsRows([
+      { id: 'fa-1', name: 'Luz', amountCents: 9_000 },
+    ])
+    expect(rows).toHaveLength(1)
+    const row = rows[0]
+    expect(row.name).toBe('Luz')
+    expect(row.groupName).toBe('Contas fixas')
+    expect(row.valuePerCents).toBe(9_000)
+    expect(row.nSemanas).toBe(1)
+    expect(row.readOnly).toBe(true)
+  })
+
+  it('returns an empty array for no fixed accounts', () => {
+    expect(fixedAccountsAsRows([])).toEqual([])
+  })
+})
+
+describe('weeklySpendSchema', () => {
+  const valid = {
+    month: '2026-11',
+    weekIndex: 0,
+    categoryId: 'cat-1',
+    manualCents: 1500,
+  }
+
+  it('accepts a valid override', () => {
+    expect(weeklySpendSchema.safeParse(valid).success).toBe(true)
+  })
+
+  it('accepts a manual 0 (an explicit zero is still an override)', () => {
+    expect(weeklySpendSchema.safeParse({ ...valid, manualCents: 0 }).success).toBe(
+      true
+    )
+  })
+
+  it('rejects a negative manualCents', () => {
+    expect(
+      weeklySpendSchema.safeParse({ ...valid, manualCents: -1 }).success
+    ).toBe(false)
+  })
+
+  it('rejects weekIndex out of 0..3', () => {
+    expect(weeklySpendSchema.safeParse({ ...valid, weekIndex: 4 }).success).toBe(
+      false
+    )
+  })
+
+  it('rejects a malformed month', () => {
+    expect(weeklySpendSchema.safeParse({ ...valid, month: '2026/11' }).success).toBe(
+      false
+    )
   })
 })
 

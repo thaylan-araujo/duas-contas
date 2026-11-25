@@ -38,3 +38,15 @@ export const updatePlanItemSchema = planItemBase
   })
 
 export type UpdatePlanItemFormData = z.infer<typeof updatePlanItemSchema>
+
+// Override manual do "Gastei R$" por (mês, semana, categoria) — D-02, Pitfall 4.
+// manualCents aceita 0 (um zero explícito ainda é um override). weekIndex é
+// limitado a 0..3 e month ao formato 'YYYY-MM' (T-03-11).
+export const weeklySpendSchema = z.object({
+  month: z.string().regex(/^\d{4}-\d{2}$/, 'Mês inválido.'),
+  weekIndex: z.number().int().min(0).max(3),
+  categoryId: z.string().min(1, 'Categoria obrigatória.'),
+  manualCents: z.number().int().nonnegative('O valor não pode ser negativo.'),
+})
+
+export type WeeklySpendFormData = z.infer<typeof weeklySpendSchema>

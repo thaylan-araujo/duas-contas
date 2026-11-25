@@ -2,6 +2,8 @@
 // Business logic — pure calc functions (testable, no Prisma) + Prisma access.
 // No 'use server' here (this is a plain module).
 import { prisma } from '@/lib/prisma'
+import { weekDateRange } from '@/lib/weeks'
+import { getFixedAccounts } from '../../contas-fixas/_lib/service'
 import type { PlanItemFormData } from './schema'
 
 // ---------------------------------------------------------------------------
@@ -45,6 +47,73 @@ export function computePlanSummary(
   )
   const folga = ceilingCents - totalPlanejado
   return { totalPlanejado, folga, acima: folga < 0 }
+}
+
+/**
+ * "Gastei R$" exibido em um item/semana (D-02, Pitfall 4):
+ * - manualCents definido (inclusive 0) → override manual tem precedência.
+ * - manualCents null/undefined → usa a soma automática (autoCents).
+ *
+ * O cuidado com o zero explícito é essencial: `manualCents || autoCents`
+ * trataria 0 como "sem override" e voltaria ao automático — bug (Pitfall 4).
+ */
+export function resolveGastei({
+  manualCents,
+  autoCents,
+}: {
+  manualCents: number | null | undefined
+  autoCents: number
+}): number {
+  return manualCents === null || manualCents === undefined
+    ? autoCents
+    : manualCents
+}
+
+/**
+ * "sobra" de uma semana/item (spec §Cálculos) = planejado − gastei.
+ * Negativo quando o gasto passou do planejado.
+ */
+export function computeWeekRemaining(
+  planejadoCents: number,
+  gasteiCents: number
+): number {
+  return planejadoCents - gasteiCents
+}
+
+/** Shape mínimo de uma conta fixa para a derivação no plano. */
+export interface FixedAccountInput {
+  id: string
+  name: string
+  amountCents: number
+}
+
+/** Linha derivada (somente-leitura) do grupo "Contas fixas" no plano (D-05). */
+export interface DerivedFixedRow {
+  id: string
+  name: string
+  groupName: 'Contas fixas'
+  valuePerCents: number
+  nSemanas: number
+  readOnly: true
+}
+
+/**
+ * Projeta cada conta fixa cadastrada como uma linha derivada somente-leitura
+ * no grupo "Contas fixas" do plano (PLAN-06/D-05). NÃO toca o Prisma e NÃO é
+ * persistida como PlanItem — é apenas uma visão em tempo de render, mantendo
+ * as Contas fixas como fonte única (03-RESEARCH A5).
+ */
+export function fixedAccountsAsRows(
+  fixedAccounts: FixedAccountInput[]
+): DerivedFixedRow[] {
+  return fixedAccounts.map((fa) => ({
+    id: fa.id,
+    name: fa.name,
+    groupName: 'Contas fixas' as const,
+    valuePerCents: fa.amountCents,
+    nSemanas: 1,
+    readOnly: true as const,
+  }))
 }
 
 // ---------------------------------------------------------------------------
@@ -268,4 +337,132 @@ export async function copyPlanFromPreviousMonth(userId: string, month: string) {
       })
     )
   )
+}
+
+// ---------------------------------------------------------------------------
+// Gastei R$ semanal (D-02) — soma automática + override persistido (WeeklySpend)
+// ---------------------------------------------------------------------------
+
+/**
+ * Soma automática do "Gastei R$" de uma (semana × categoria): Σ das Transactions
+ * CASA SAIDA dessa categoria cujo `date` cai na faixa da semana `weekIndex` do
+ * `month` (D-02). Reutiliza `weekDateRange` (fonte única das faixas — Plano 01),
+ * de modo que os cartões semanais e o gráfico do dashboard concordem.
+ * Sempre filtra por userId (T-03-13) e força account 'CASA'.
+ */
+export async function getAutoGastei(
+  userId: string,
+  month: string,
+  weekIndex: 0 | 1 | 2 | 3,
+  categoryId: string
+): Promise<number> {
+  const { start, end } = weekDateRange(month, weekIndex)
+  // Inclui o dia final inteiro (até 23:59:59.999), como em getTotalSpent.
+  const endOfDay = new Date(
+    end.getFullYear(),
+    end.getMonth(),
+    end.getDate(),
+    23,
+    59,
+    59,
+    999
+  )
+  const result = await prisma.transaction.aggregate({
+    _sum: { amountCents: true },
+    where: {
+      userId,
+      account: 'CASA',
+      type: 'SAIDA',
+      categoryId,
+      date: { gte: start, lte: endOfDay },
+    },
+  })
+  return result._sum.amountCents ?? 0
+}
+
+/**
+ * Mapa dos overrides manuais do mês, indexado por `${weekIndex}:${categoryId}`.
+ * A ausência de uma chave significa "sem override" → usar a soma automática.
+ */
+export async function getWeeklySpends(
+  userId: string,
+  month: string
+): Promise<Map<string, number>> {
+  const rows = await prisma.weeklySpend.findMany({
+    where: { userId, month },
+    select: { weekIndex: true, categoryId: true, manualCents: true },
+  })
+  return new Map(
+    rows.map((r) => [`${r.weekIndex}:${r.categoryId}`, r.manualCents])
+  )
+}
+
+/**
+ * Persiste (upsert) o override manual do "Gastei R$" na chave composta
+ * (userId, month, weekIndex, categoryId). manualCents pode ser 0 (Pitfall 4).
+ * IDOR (T-03-10): userId vem sempre da sessão na chave composta.
+ */
+export async function saveWeeklySpend(
+  userId: string,
+  month: string,
+  weekIndex: number,
+  categoryId: string,
+  manualCents: number
+) {
+  return prisma.weeklySpend.upsert({
+    where: {
+      userId_month_weekIndex_categoryId: {
+        userId,
+        month,
+        weekIndex,
+        categoryId,
+      },
+    },
+    update: { manualCents },
+    create: { userId, month, weekIndex, categoryId, manualCents },
+  })
+}
+
+/**
+ * Remove o override manual (→ volta à soma automática). deleteMany escopado por
+ * userId (T-03-10): um usuário só apaga os próprios WeeklySpend.
+ */
+export async function clearWeeklySpend(
+  userId: string,
+  month: string,
+  weekIndex: number,
+  categoryId: string
+) {
+  return prisma.weeklySpend.deleteMany({
+    where: { userId, month, weekIndex, categoryId },
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Total planejado do mês (persistidos + contas fixas derivadas) — dashboard
+// ---------------------------------------------------------------------------
+
+/**
+ * Total planejado real do mês (lido pelo card "Planejado" do dashboard):
+ * Σ dos PlanItems persistidos (valor × nº semanas) + Σ das contas fixas
+ * derivadas (uma vez cada — D-05). Reutiliza computePlanSummary e
+ * fixedAccountsAsRows para não duplicar a regra de cálculo.
+ */
+export async function getPlanTotal(
+  userId: string,
+  month: string
+): Promise<number> {
+  const [planItems, fixedAccounts] = await Promise.all([
+    getPlanItemsWithCategory(userId, month),
+    getFixedAccounts(userId),
+  ])
+
+  const itemsTotal = computePlanSummary(planItems, 0).totalPlanejado
+
+  const fixedTotal = fixedAccountsAsRows(fixedAccounts).reduce(
+    (sum, r) => sum + r.valuePerCents * r.nSemanas,
+    0
+  )
+
+  return itemsTotal + fixedTotal
 }
