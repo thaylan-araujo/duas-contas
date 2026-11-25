@@ -1,10 +1,11 @@
 ---
 phase: 4
 slug: empresas-multi-e-renda-familiar
-status: draft
+status: approved
 shadcn_initialized: true
 preset: "shadcn style default (Radix UI) — herdado das Fases 1/2/3"
 created: 2026-11-25
+reviewed_at: 2026-11-25
 fatia: "1 de 4 — Fundação multi-empresa"
 ---
 
