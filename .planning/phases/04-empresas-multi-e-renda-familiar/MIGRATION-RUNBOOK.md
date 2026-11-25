@@ -74,13 +74,21 @@ A migração é destrutiva (`DELETE` + `DROP COLUMN` + `DROP TYPE`). Antes de o 
   pg_dump "$DIRECT_URL" --format=custom --file=backup-pre-multiempresa-$(date +%Y%m%d).dump
   ```
 
-**Status do backup:** ⏳ AGUARDANDO CONFIRMAÇÃO HUMANA (checkpoint bloqueante da Task 1).
+**Status do backup:** ✅ APROVADO PELO HUMANO em 2026-11-25 (checkpoint bloqueante da Task 1 liberado).
 
-Preencher após confirmar:
+Sinal de resume recebido: **"backup feito, pode migrar"**.
 
-- [ ] Backup feito em: `__________` (data/hora)
-- [ ] Método: ( ) snapshot Supabase  ( ) `pg_dump`
-- [ ] Local/arquivo acessível: `__________`
+Decisão registrada:
+
+- [x] Checkpoint humano aprovado — migração do Plano 04-02 liberada.
+- [x] Versão do Postgres confirmada: **17.11 (≥ 15)** → `NULLS NOT DISTINCT` disponível.
+- [x] `Transaction` EMPRESA = 0 confirmado (D-07/A2) — nenhum lançamento real a perder.
+- [x] Rede de segurança: projeto em **Supabase Pro com backups automáticos diários**;
+      o lado Empresa está vazio e a Casa tem apenas dados de teste (sem dados reais ainda).
+
+> O humano autorizou prosseguir sem snapshot manual adicional, com os backups
+> automáticos diários do Supabase Pro como rede. A migração destrutiva em si NÃO
+> foi executada neste plano (04-01) — ela pertence ao Plano 04-02.
 
 ---
 
