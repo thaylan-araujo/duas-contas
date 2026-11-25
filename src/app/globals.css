@@ -15,6 +15,19 @@
   --color-positive: #0F766E;
   --color-warning: #8A3A06;
 
+  /* Paleta fixa de cores de empresa (UI-SPEC §Color). O par "laranja" reutiliza
+     os tokens --color-empresa / --color-empresa-light acima. */
+  --color-empresa-verde: #0F766E;
+  --color-empresa-verde-light: #D7EFE9;
+  --color-empresa-roxo: #6D28D9;
+  --color-empresa-roxo-light: #EDE4FD;
+  --color-empresa-rosa: #BE185D;
+  --color-empresa-rosa-light: #FBE0ED;
+  --color-empresa-ambar: #A16207;
+  --color-empresa-ambar-light: #FBEFD0;
+  --color-empresa-cinza: #475569;
+  --color-empresa-cinza-light: #E2E8F0;
+
   /* Fonts wired from next/font CSS variables */
   --font-sans: var(--font-manrope);
   --font-mono: var(--font-ibm-plex-mono);

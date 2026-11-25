@@ -9,9 +9,16 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum ContaType {
-  CASA
-  EMPRESA
+enum EmpresaTipo {
+  AFILIADO
+  JURIDICO_SERVICOS
+  INFOPRODUTO
+  GENERICO
+}
+
+enum CategoryKind {
+  RECEITA
+  CUSTO
 }
 
 enum TransactionType {
@@ -23,6 +30,7 @@ model User {
   id              String          @id
   categories      Category[]
   transactions    Transaction[]
+  empresas        Empresa[]
   monthlyBudgets  MonthlyBudget[]
   planItems       PlanItem[]
   weeklySpends    WeeklySpend[]
@@ -32,10 +40,31 @@ model User {
   createdAt       DateTime        @default(now())
 }
 
+// Empresa (D-02/D-03/D-07). Cada empresa tem suas próprias categorias e
+// lançamentos. Casa é representada por empresaId NULL em Category/Transaction
+// (não há linha Empresa para a Casa). onDelete: Restrict protege contra
+// exclusão em cascata (D-08) — a exclusão é bloqueada no service se houver
+// lançamentos vinculados.
+model Empresa {
+  id           String        @id @default(cuid())
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String
+  nome         String
+  tipo         EmpresaTipo
+  cor          String        // chave da paleta fixa (UI-SPEC §Color)
+  categories   Category[]
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+
+  @@unique([nome, userId])
+}
+
 model Category {
   id           String        @id @default(cuid())
   name         String
-  account      ContaType
+  empresa      Empresa?      @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  empresaId    String?       // null = Casa
+  kind         CategoryKind? // null para Casa; RECEITA/CUSTO para empresa
   user         User          @relation(fields: [userId], references: [id])
   userId       String
   transactions Transaction[]
@@ -43,7 +72,9 @@ model Category {
   isDefault    Boolean       @default(false)
   createdAt    DateTime      @default(now())
 
-  @@unique([name, account, userId])
+  // NOTA: o @@unique abaixo NÃO cobre a Casa (empresaId null) sozinho — o índice
+  // real é criado com NULLS NOT DISTINCT no SQL hand-editado (04-RESEARCH Pitfall 1).
+  @@unique([name, empresaId, userId])
 }
 
 model Transaction {
@@ -54,7 +85,8 @@ model Transaction {
   type        TransactionType
   category    Category        @relation(fields: [categoryId], references: [id])
   categoryId  String
-  account     ContaType
+  empresa     Empresa?        @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  empresaId   String?         // null = Casa
   user        User            @relation(fields: [userId], references: [id])
   userId      String
   origin      String          @default("manual")
