@@ -24,6 +24,11 @@ model User {
   categories      Category[]
   transactions    Transaction[]
   monthlyBudgets  MonthlyBudget[]
+  planItems       PlanItem[]
+  weeklySpends    WeeklySpend[]
+  fixedAccounts   FixedAccount[]
+  annualExpenses  AnnualExpense[]
+  goals           Goal[]
   createdAt       DateTime        @default(now())
 }
 
@@ -34,6 +39,7 @@ model Category {
   user         User          @relation(fields: [userId], references: [id])
   userId       String
   transactions Transaction[]
+  planItems    PlanItem[]
   isDefault    Boolean       @default(false)
   createdAt    DateTime      @default(now())
 
@@ -68,4 +74,82 @@ model MonthlyBudget {
   updatedAt    DateTime @updatedAt
 
   @@unique([userId, month])
+}
+
+// Item do plano mensal da Casa (D-01/D-03).
+// "Grupo" reaproveita a Categoria da Casa existente (D-03) para casar com os
+// lançamentos reais no cálculo automático do "Gastei". As 4 semanas são
+// explícitas (D-01): total do item = valuePerCents × nº de semanas marcadas.
+model PlanItem {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  month         String   // 'YYYY-MM'
+  name          String
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  valuePerCents Int // valor por vez, em centavos
+  week1         Boolean  @default(false)
+  week2         Boolean  @default(false)
+  week3         Boolean  @default(false)
+  week4         Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, month])
+}
+
+// Override manual do "Gastei R$" por semana × categoria (D-02, Pitfall 4).
+// Uma linha existe → override manual; nenhuma linha → usa a soma automática.
+model WeeklySpend {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  month       String // 'YYYY-MM'
+  weekIndex   Int // 0..3
+  categoryId  String
+  manualCents Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, month, weekIndex, categoryId])
+}
+
+// Conta fixa (FIXA-01). Entra automaticamente no plano do mês no grupo
+// "Contas fixas" como linha derivada em tempo de render (D-05) — não é
+// persistida como PlanItem.
+model FixedAccount {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  dueDay      Int // 1..31
+  amountCents Int
+  autoDebit   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// Gasto anual (FIXA-02). Exibe apenas "guardar por mês" = yearlyCents / 12
+// (D-05); não vira meta automaticamente.
+model AnnualExpense {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  yearlyCents Int
+  dueMonth    Int // 1..12
+  createdAt   DateTime @default(now())
+}
+
+// Meta de poupança (META-01/META-02). Seed nasce apenas com o nome:
+// alvo/guardado zerados, prazo nulo para o usuário preencher (D-06).
+model Goal {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  targetCents Int      @default(0)
+  savedCents  Int      @default(0)
+  deadline    String? // 'YYYY-MM' nullable (seed sem prazo)
+  createdAt   DateTime @default(now())
 }
