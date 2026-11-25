@@ -89,7 +89,21 @@ Plans:
   4. Usuário pode copiar o plano do mês anterior com um único botão
   5. Usuário vê metas de poupança (incluindo as pré-cadastradas "Reserva de emergência" e "Caixinha do carro") com barra de progresso e quanto guardar por mês
 
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Fundação: 5 modelos Prisma + Vitest + extração de src/lib/weeks.ts (testes de faixa de semana) + shadcn Checkbox/Switch/Progress/Table
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-02-PLAN.md — Planejamento (core): tabela de itens + Resumo (teto/Planejado/Folga + barra segmentada) + pré-preenchimento do 1º mês + Copiar plano do mês anterior
+- [ ] 03-04-PLAN.md — Contas fixas, gastos do ano ÷12 e metas (3 cards, CRUD, seed de 2 metas, barra de progresso)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 03-03-PLAN.md — Cartões semanais com "Gastei R$" automático + override, contas fixas derivadas no plano e integração do dashboard (Planejado/Folga)
+
 **UI hint**: yes
 
 ### Phase 4: Empresa
@@ -182,7 +196,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/2 | In Progress|  |
 | 2. Core CRUD | 4/4 | Complete   | 2026-11-24 |
-| 3. Planning | 0/? | Not started | - |
+| 3. Planning | 0/4 | Planned | - |
 | 4. Empresa | 0/? | Not started | - |
 | 5. Calendário e Alertas | 0/? | Not started | - |
 | 6. Relatório Mensal | 0/? | Not started | - |
