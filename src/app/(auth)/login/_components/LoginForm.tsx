@@ -43,12 +43,26 @@ export function LoginForm() {
       })
 
       if (error) {
-        // T-02-02: Generic error — does NOT reveal if email exists (ASVS V2.2)
-        // Supabase returns status 400 for invalid credentials
-        if (error.status === 400 || error.message?.toLowerCase().includes('invalid')) {
+        // Detalhe técnico real no console para depuração (não aparece ao usuário).
+        console.error('Falha no login:', error.status, error.code, error.message)
+
+        // Só tratamos como credencial errada quando o Supabase realmente diz isso.
+        // Antes, QUALQUER erro contendo "invalid" (inclusive "Invalid API key" de
+        // configuração) virava "e-mail ou senha incorretos", escondendo a causa real.
+        const invalidCredentials =
+          error.code === 'invalid_credentials' ||
+          error.message?.toLowerCase().includes('invalid login credentials')
+        const emailNotConfirmed = error.code === 'email_not_confirmed'
+
+        if (invalidCredentials) {
+          // T-02-02: Genérico — não revela se o e-mail existe (ASVS V2.2)
           setServerError('E-mail ou senha incorretos. Tente novamente.')
+        } else if (emailNotConfirmed) {
+          setServerError('Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada.')
         } else {
-          setServerError('Não foi possível conectar. Verifique sua conexão e tente novamente.')
+          // Erro de configuração/servidor (chave de API inválida, serviço fora do ar, etc.).
+          // NÃO culpa a senha — o detalhe fica no console acima.
+          setServerError('Não foi possível entrar agora. Tente novamente em instantes.')
         }
         return
       }
