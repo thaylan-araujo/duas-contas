@@ -107,6 +107,35 @@ foram perdidos.
 
 ---
 
+## 5. Resultado DEPOIS da migração (executado no Plano 04-02 — 2026-11-25)
+
+Contagens pós-migração (read-only, via DIRECT_URL / porta 5432):
+
+| Verificação                            | Valor DEPOIS | Esperado | Status |
+| -------------------------------------- | -----------: | -------: | :----: |
+| `Category` com `empresaId IS NULL`     |          `5` |      `5` |   ✅   |
+| `Transaction` com `empresaId IS NULL`  |          `0` |      `0` |   ✅   |
+| colunas `account` restantes            |          `0` |      `0` |   ✅   |
+| tipo `ContaType` ainda existe          |          `0` |      `0` |   ✅   |
+| índice Casa                            | `Category_name_empresaId_userId_key ... NULLS NOT DISTINCT` | NULLS NOT DISTINCT | ✅ |
+
+✅ A migração estrutural (entidade `Empresa`, `empresaId` nullable, índice NULLS NOT
+DISTINCT, DROP de `account`/`ContaType`) aplicou corretamente. A Casa foi restaurada
+ao baseline exato (5 categorias, `empresaId NULL`).
+
+> ⚠️ **INCIDENTE registrado (dados de teste):** durante a geração do SQL, o comando
+> `prisma migrate diff --shadow-database-url $DIRECT_URL` foi executado apontando o
+> **shadow-database-url para o banco REAL**. O Prisma trata o shadow DB como descartável
+> e o **resetou**, apagando o seed de teste (1 usuário + 5 categorias CASA + 5 EMPRESA).
+> Como o banco continha **apenas dados de teste determinísticos** (runbook §3 — "sem dados
+> reais ainda") e o Supabase Pro mantém backups diários, a recuperação foi feita re-rodando
+> `npx prisma db seed`, que recria exatamente o baseline da Casa (5 categorias `empresaId NULL`).
+> As contagens finais acima batem com a §2 (ANTES). Lição: **nunca** apontar
+> `--shadow-database-url` para o banco real; usar um banco descartável separado. Ver
+> 04-02-SUMMARY.md §Deviations.
+
+---
+
 ## Referências
 
 - CLAUDE.md — "nunca apague dados ou o banco sem me avisar antes; backup antes de qualquer mudança que possa perder dados".
