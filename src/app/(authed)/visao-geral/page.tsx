@@ -22,7 +22,7 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
   // Contexto ativo do ContaSelector global: Casa (null) ou empresa (id). EMPF-06.
   const empresaIdContexto: string | null = empresaId ?? null
 
-  const { budget, totalSpentCents, categorySpending, weeklySpending, planTotalCents } =
+  const { budget, totalSpentCents, categorySpending, weeklySpending } =
     await loadDashboardData(userId, currentMonth, empresaIdContexto)
 
   return (
@@ -34,7 +34,7 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       <DashboardCards
         budget={budget}
         totalSpentCents={totalSpentCents}
-        planTotalCents={planTotalCents}
+        planTotalCents={null}
         month={currentMonth}
       />
 
