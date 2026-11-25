@@ -22,8 +22,13 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
   // Contexto ativo do ContaSelector global: Casa (null) ou empresa (id). EMPF-06.
   const empresaIdContexto: string | null = empresaId ?? null
 
-  const { budget, totalSpentCents, categorySpending, weeklySpending } =
-    await loadDashboardData(userId, currentMonth, empresaIdContexto)
+  const {
+    budget,
+    totalSpentCents,
+    restanteCents,
+    categorySpending,
+    weeklySpending,
+  } = await loadDashboardData(userId, currentMonth, empresaIdContexto)
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,8 +39,9 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       <DashboardCards
         budget={budget}
         totalSpentCents={totalSpentCents}
-        planTotalCents={null}
+        restanteCents={restanteCents}
         month={currentMonth}
+        isEmpresa={empresaIdContexto !== null}
       />
 
       <CategorySpendingBars categorySpending={categorySpending} />
