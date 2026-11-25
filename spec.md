@@ -41,9 +41,25 @@ Comece só pela Etapa 1 depois que eu aprovar o plano.
 - Saber quais canais da empresa dão lucro depois dos anúncios.
 - Prever o caixa da empresa com 3 a 6 meses de antecedência.
 
+## Evolução: Multi-Empresa e Renda Familiar (atualizado 25/11/2026)
+
+> **Esta seção é a direção atual e tem precedência sobre as descrições de "Empresa" (telas 5 e 6) e sobre a tabela de Entidades abaixo, onde houver conflito.** Detalhe completo em `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md`. Entregue na reorganização da Fase 4 do roadmap.
+
+O sistema deixa de ter **uma** empresa e passa a ter **Casa + N empresas independentes**. Hoje são três — **Elite Juris** (jurídico: recorrência de clientes + projetos pontuais), **Achadinhos** (afiliado: comissões; custo em anúncios) e **Infoproduto** (vendas; plataforma/imposto/investimento) — mas o usuário pode **criar/editar/remover empresas** (CRUD).
+
+- **Cada empresa tem P&L próprio:** receitas − custos categorizados (imposto, funcionário, ferramentas, anúncios, investimento…) = lucro. Faturamento bruto e líquido. Cada empresa mostra só os campos do seu **tipo** (ex.: comissões/anúncios/ROAS só para afiliado; recorrência+projetos para jurídico; vendas/plataforma para infoproduto).
+- **Regra de ouro generalizada:** dinheiro só chega na família como **pró-labore** — agora de várias empresas. Nenhuma empresa se mistura com a Casa nem entre si.
+- **Pró-labore de cada empresa → renda familiar:** cada pró-labore é uma transferência (reutiliza o par de pró-labore existente) marcando a **empresa de origem**; a renda familiar é a soma dessas entradas.
+- **Visão geral da família:** renda familiar − gastos = quanto sobra; caixa e cada caixinha de investimento (metas/reserva da Fase 3).
+- **Consolidado das 3** (quanto geram juntas) e **projeção** de quanto sobra nos próximos 3–6 meses, com alerta de saldo negativo (por empresa e no consolidado).
+- O seletor "Casa / Empresa" passa a ser **Casa + [empresas]**.
+- **Adiado para o fim:** logins separados por pessoa (segue **um usuário só**) e orçamento individual por pessoa (Thaylan × Ligiane).
+
 ## Telas e funcionalidades
 
 São 9 telas. Um menu lateral fixo agrupa as telas em Visão geral, Casa, Empresa e Geral. No celular, o menu vira uma barra no topo.
+
+> **Nota:** as telas 5 (Canais e caixa) e 6 (Dívidas) abaixo descrevem a versão de **uma** empresa. Com a evolução multi-empresa (seção acima), elas passam a existir **por empresa**, e os "canais/ROAS" tornam-se um recurso específico da Achadinhos (e de quem roda anúncio). Dívidas e DAS também são **por empresa**.
 
 ### 1. Visão geral (painel)
 
@@ -128,6 +144,8 @@ São 9 telas. Um menu lateral fixo agrupa as telas em Visão geral, Casa, Empres
 - **Pró-labore** sai da Empresa como saída e entra na Casa como entrada, em uma única operação de transferência. Não conta como gasto nem como faturamento.
 
 ### Entidades (modelo de dados)
+
+> **Atualizado pela evolução multi-empresa:** "Conta" deixa de ser o enum Casa/Empresa e passa a ser **Casa + uma entidade Empresa** (com nome, tipo de negócio e flags de módulos). Lançamentos, categorias, dívidas e vencimentos passam a referenciar **qual empresa**. Adiciona-se a visão de **Renda familiar** (derivada: soma dos pró-labores por empresa de origem − gastos da Casa). A transferência de pró-labore ganha o campo **empresa de origem**.
 
 | Entidade | Campos principais |
 | --- | --- |

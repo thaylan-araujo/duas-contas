@@ -1,7 +1,7 @@
 # Roadmap: Duas Contas
 
 **Project:** Duas Contas
-**Core Value:** A Casa e a Empresa nunca se misturam — dinheiro só passa de uma para outra como pró-labore, registrado como transferência explícita.
+**Core Value:** A Casa e cada empresa nunca se misturam (nem as empresas entre si) — dinheiro só chega na família como pró-labore de cada empresa, registrado como transferência explícita. (Evoluiu de 1 empresa para N empresas em 25/11/2026 — ver docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md.)
 **Created:** 28/10/2026
 **Mode:** mvp
 
@@ -12,7 +12,7 @@
 - [ ] **Phase 1: Foundation** - Infraestrutura, autenticação e utilitários críticos antes de qualquer feature
 - [x] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa (completed 2026-11-24)
 - [x] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas (completed 2026-11-25)
-- [ ] **Phase 4: Empresa** - Canais P&L, dívidas, fluxo de caixa e dashboard da Empresa
+- [ ] **Phase 4: Empresas (multi) e Renda Familiar** - Casa + N empresas independentes (P&L por empresa), pró-labore de cada → renda familiar, consolidado + projeção, dívidas e DAS por empresa (ver docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md)
 - [ ] **Phase 5: Calendário e Alertas** - Calendário de vencimentos com notificações push
 - [ ] **Phase 6: Relatório Mensal** - Relatório completo e exportação em PDF
 - [ ] **Phase 7: Importação CSV/OFX** - Upload de extrato com categorização automática
@@ -106,19 +106,21 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 4: Empresa
+### Phase 4: Empresas (multi) e Renda Familiar
 
-**Goal**: Usuário pode acompanhar o P&L dos canais de afiliados, monitorar o progresso das dívidas ativas (Pronampe e Simples parcelado) e projetar o fluxo de caixa da empresa nos próximos meses
+**Goal**: Usuário gerencia **N empresas independentes** (hoje Elite Juris, Achadinhos, Infoproduto), cada uma com P&L próprio (receitas − custos categorizados = lucro); o pró-labore de cada empresa alimenta a **renda familiar**; e o usuário vê o **consolidado das empresas** e uma **projeção** de quanto vai sobrar, além das dívidas e DAS **por empresa**.
 **Mode:** mvp
 **Depends on**: Phase 3
-**Requirements**: CHAN-01, CHAN-02, CHAN-03, CHAN-04, CHAN-05, DIV-01, DIV-02, DIV-03, DIV-04, DIV-05, DIV-06, DASH-03, DASH-04
+**Design**: `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md` (fonte autoritativa; leitura obrigatória antes de discutir/planejar esta fase)
+**Requirements**: CHAN-01, CHAN-02, CHAN-03, CHAN-04, CHAN-05, DIV-01, DIV-02, DIV-03, DIV-04, DIV-05, DIV-06, DASH-03, DASH-04 (reinterpretados no contexto multi-empresa; novos requisitos EMP-*/FAM-* a formalizar no planejamento)
+**Nota de reorganização (25/11/2026)**: substitui a antiga "Fase 4: Empresa" (uma empresa). Provável divisão em sub-fases no planejamento: (4a) fundação multi-empresa — modelo de dados Casa + N empresas, CRUD de empresas, seletor; (4b) P&L por empresa; (4c) pró-labore multi-origem → renda familiar; (4d) consolidado + projeção. Multiusuário/orçamento por pessoa ficam adiados para a cauda do roadmap.
 **Success Criteria** (what must be TRUE):
 
-  1. Usuário pode registrar comissões e gastos com anúncios Meta por canal; o sistema exibe lucro (comissões − anúncios) e ROAS por canal
-  2. Pronampe e Parcelamento do Simples aparecem pré-cadastrados; usuário pode registrar pagamentos de parcela e vê barra de progresso por dívida
-  3. Usuário vê projeção de fluxo de caixa para 3 ou 6 meses com saldo final por mês; meses com saldo negativo projetado são destacados com alerta e o quanto falta
-  4. Usuário vê o dashboard da Empresa com faturamento, DAS do mês, parcelas de dívidas e sobra para pró-labore
-  5. Usuário vê o "caminho do dinheiro" (faturamento → impostos → dívidas → caixa → pró-labore) e tabela de compromissos
+  1. Usuário pode criar/editar empresas e, em cada uma, registrar receitas e custos categorizados; o sistema exibe faturamento bruto/líquido e lucro. Para empresas de afiliado, registra comissões e anúncios (Meta) com lucro e ROAS.
+  2. Pronampe e Parcelamento do Simples aparecem pré-cadastrados **na empresa dona**; usuário registra pagamentos e vê barra de progresso por dívida (dívidas e DAS são por empresa).
+  3. Usuário "aplica" o pró-labore de cada empresa e ele cai automaticamente na **renda familiar**; a visão da família mostra renda − gastos = quanto sobra, caixa e cada caixinha de investimento (metas da Fase 3).
+  4. Usuário vê o **consolidado das empresas** (quanto geram juntas) e uma **projeção** de caixa para 3–6 meses, com alerta de saldo negativo por empresa e no consolidado.
+  5. Usuário vê o "caminho do dinheiro" por empresa (faturamento → impostos → dívidas → caixa → pró-labore → renda familiar).
 
 **Plans**: TBD
 **UI hint**: yes
