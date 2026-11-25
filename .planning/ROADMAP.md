@@ -122,7 +122,23 @@ Plans:
   4. Usuário vê o **consolidado das empresas** (quanto geram juntas) e uma **projeção** de caixa para 3–6 meses, com alerta de saldo negativo por empresa e no consolidado.
   5. Usuário vê o "caminho do dinheiro" por empresa (faturamento → impostos → dívidas → caixa → pró-labore → renda familiar).
 
-**Plans**: TBD
+**Plans**: 4 plans (Fatia 1 — Fundação multi-empresa; demais fatias 4b–4d serão planejadas em rodadas próprias)
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Wave 0: checkpoint de backup + versão PG>=15, instalar DropdownMenu, testes RED das funções puras
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-02-PLAN.md — Migração ContaType→Empresa/empresaId (dados da Casa preservados, NULLS NOT DISTINCT) + store generalizado + refactor dos consumidores de account
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 04-03-PLAN.md — CRUD de empresa (/empresas): service/actions/loader + Sheet/ColorPicker/Dialog + categorias por empresa + seed das 3 empresas
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 04-04-PLAN.md — ContaSelector (dropdown Casa + empresas) global + lançamentos/visão geral por contexto + verificação ponta a ponta
 **UI hint**: yes
 
 ### Phase 5: Calendário e Alertas
