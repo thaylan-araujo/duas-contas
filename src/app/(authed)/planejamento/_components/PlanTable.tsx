@@ -3,7 +3,7 @@
 // Card "Quanto vai para cada coisa": the plan items table (desktop) / card-list
 // (mobile). Row click opens the edit Sheet; desktop hover reveals Pencil/Trash2.
 import { useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Lock } from 'lucide-react'
 import {
   Table,
   TableHeader,
@@ -25,8 +25,20 @@ export interface PlanTableItem extends ExistingPlanItem {
   category: { id: string; name: string }
 }
 
+/** Linha derivada (somente-leitura) de uma conta fixa — PLAN-06/D-05. */
+export interface FixedRow {
+  id: string
+  name: string
+  valuePerCents: number
+  nSemanas: number
+}
+
+const FIXED_GROUP_NAME = 'Contas fixas'
+const FIXED_TOOLTIP = 'Vem das Contas fixas — edite na seção Contas fixas.'
+
 interface PlanTableProps {
   items: PlanTableItem[]
+  fixedRows?: FixedRow[]
   ceilingCents: number
   month: string
   categories: Category[]
@@ -39,6 +51,7 @@ function pctOfCeiling(totalCents: number, ceilingCents: number): string {
 
 export function PlanTable({
   items,
+  fixedRows = [],
   ceilingCents,
   month,
   categories,
@@ -77,7 +90,7 @@ export function PlanTable({
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {items.length === 0 && fixedRows.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-10 text-center">
           <p className="text-base font-semibold text-text-primary">
             Nenhum item planejado para este mês
@@ -201,6 +214,50 @@ export function PlanTable({
                     </TableRow>
                   )
                 })}
+
+                {/* Linhas derivadas das Contas fixas — somente-leitura (D-05) */}
+                {fixedRows.map((row) => {
+                  const total = row.valuePerCents * row.nSemanas
+                  return (
+                    <TableRow key={`fixed-${row.id}`} className="bg-bg/40">
+                      <TableCell className="font-sans text-base font-semibold text-text-primary">
+                        <span className="flex items-center gap-2">
+                          <Lock
+                            size={14}
+                            className="text-text-secondary"
+                            aria-hidden="true"
+                          />
+                          <span title={FIXED_TOOLTIP}>{row.name}</span>
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex items-center gap-2 text-base text-text-primary">
+                          <span
+                            aria-hidden="true"
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ backgroundColor: groupColor(FIXED_GROUP_NAME) }}
+                          />
+                          {FIXED_GROUP_NAME}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-mono text-base font-semibold text-text-primary">
+                        {formatBRL(row.valuePerCents)}
+                      </TableCell>
+                      <TableCell className="font-mono text-base text-text-secondary">
+                        × {row.nSemanas}
+                      </TableCell>
+                      <TableCell className="font-mono text-base font-semibold text-text-primary">
+                        {formatBRL(total)}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm text-text-secondary">
+                        {pctOfCeiling(total, ceilingCents)}
+                      </TableCell>
+                      <TableCell>
+                        <span className="sr-only">Somente leitura</span>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
@@ -243,6 +300,47 @@ export function PlanTable({
                       </span>
                     </div>
                   </button>
+                </li>
+              )
+            })}
+
+            {/* Linhas derivadas das Contas fixas — somente-leitura (D-05) */}
+            {fixedRows.map((row) => {
+              const total = row.valuePerCents * row.nSemanas
+              return (
+                <li key={`fixed-${row.id}`}>
+                  <div
+                    className="flex w-full flex-col gap-2 rounded-xl border border-border bg-bg/40 p-3 text-left"
+                    title={FIXED_TOOLTIP}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 font-sans text-base font-semibold text-text-primary">
+                        <Lock
+                          size={14}
+                          className="text-text-secondary"
+                          aria-hidden="true"
+                        />
+                        {row.name}
+                      </span>
+                      <span className="font-mono text-base font-semibold text-text-primary">
+                        {formatBRL(total)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 text-sm text-text-secondary">
+                        <span
+                          aria-hidden="true"
+                          className="inline-block h-2 w-2 rounded-full"
+                          style={{ backgroundColor: groupColor(FIXED_GROUP_NAME) }}
+                        />
+                        {FIXED_GROUP_NAME}
+                      </span>
+                      <span className="font-mono text-sm text-text-secondary">
+                        {formatBRL(row.valuePerCents)} × {row.nSemanas} ·{' '}
+                        {pctOfCeiling(total, ceilingCents)}
+                      </span>
+                    </div>
+                  </div>
                 </li>
               )
             })}

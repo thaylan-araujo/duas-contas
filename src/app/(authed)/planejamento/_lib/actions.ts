@@ -8,14 +8,18 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import {
   planItemSchema,
   updatePlanItemSchema,
+  weeklySpendSchema,
   type PlanItemFormData,
   type UpdatePlanItemFormData,
+  type WeeklySpendFormData,
 } from './schema'
 import {
   createPlanItemService,
   updatePlanItemService,
   deletePlanItemService,
   copyPlanFromPreviousMonth,
+  saveWeeklySpend,
+  clearWeeklySpend,
 } from './service'
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/
@@ -114,6 +118,68 @@ export async function copyPlanAction(
   try {
     const userId = await getUserId()
     await copyPlanFromPreviousMonth(userId, month)
+    revalidatePath('/planejamento')
+    revalidatePath('/visao-geral')
+    return { success: true }
+  } catch {
+    return {
+      success: false,
+      error: 'Não foi possível salvar. Verifique sua conexão e tente novamente.',
+    }
+  }
+}
+
+/**
+ * Persists a manual "Gastei R$" override (WeeklySpend). month/weekIndex/categoryId
+ * are server-trusted args validated by Zod; userId always from the session
+ * (T-03-10/T-03-12). manualCents may be 0 (Pitfall 4).
+ */
+export async function saveGasteiAction(
+  data: WeeklySpendFormData
+): Promise<{ success: boolean; error?: string }> {
+  const parsed = weeklySpendSchema.safeParse(data)
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message }
+  }
+
+  try {
+    const userId = await getUserId()
+    const { month, weekIndex, categoryId, manualCents } = parsed.data
+    await saveWeeklySpend(userId, month, weekIndex, categoryId, manualCents)
+    revalidatePath('/planejamento')
+    revalidatePath('/visao-geral')
+    return { success: true }
+  } catch {
+    return {
+      success: false,
+      error: 'Não foi possível salvar. Verifique sua conexão e tente novamente.',
+    }
+  }
+}
+
+/**
+ * Clears the manual override → the "Gastei R$" returns to the automatic sum.
+ * userId from the session; month/weekIndex/categoryId validated by Zod.
+ */
+export async function clearGasteiAction(
+  month: string,
+  weekIndex: number,
+  categoryId: string
+): Promise<{ success: boolean; error?: string }> {
+  // Reuse weeklySpendSchema (manualCents is irrelevant here → pass 0).
+  const parsed = weeklySpendSchema.safeParse({
+    month,
+    weekIndex,
+    categoryId,
+    manualCents: 0,
+  })
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message }
+  }
+
+  try {
+    const userId = await getUserId()
+    await clearWeeklySpend(userId, parsed.data.month, parsed.data.weekIndex, parsed.data.categoryId)
     revalidatePath('/planejamento')
     revalidatePath('/visao-geral')
     return { success: true }

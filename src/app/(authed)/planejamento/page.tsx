@@ -5,9 +5,10 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { loadPlanData } from './_lib/loader'
 import { computePlanSummary, countWeeks } from './_lib/service'
-import { PlanTable, type PlanTableItem } from './_components/PlanTable'
+import { PlanTable, type PlanTableItem, type FixedRow } from './_components/PlanTable'
 import { ResumoPlano } from './_components/ResumoPlano'
 import { CopyPlanButton } from './_components/CopyPlanButton'
+import { WeeklyCardsSection } from './_components/WeeklyCardsSection'
 import type { GroupSegment } from './_components/SegmentedBar'
 import { groupColor } from './_components/groupColors'
 
@@ -33,7 +34,7 @@ export default async function PlanejamentoPage({ searchParams }: PageProps) {
 
   const currentMonth = month ?? new Date().toISOString().slice(0, 7)
 
-  const { planItems, budget, casaCategories, hasPreviousPlan } =
+  const { planItems, budget, casaCategories, hasPreviousPlan, fixedRows, weeks } =
     await loadPlanData(userId, currentMonth)
 
   // Plan summary (totalPlanejado, folga, acima).
@@ -69,6 +70,14 @@ export default async function PlanejamentoPage({ searchParams }: PageProps) {
     category: { id: item.category.id, name: item.category.name },
   }))
 
+  // Linhas derivadas (somente-leitura) do grupo "Contas fixas" — PLAN-06/D-05.
+  const fixedTableRows: FixedRow[] = fixedRows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    valuePerCents: r.valuePerCents,
+    nSemanas: r.nSemanas,
+  }))
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -89,6 +98,7 @@ export default async function PlanejamentoPage({ searchParams }: PageProps) {
         <div className="lg:col-span-2">
           <PlanTable
             items={tableItems}
+            fixedRows={fixedTableRows}
             ceilingCents={budget.ceilingCents}
             month={currentMonth}
             categories={casaCategories}
@@ -106,6 +116,9 @@ export default async function PlanejamentoPage({ searchParams }: PageProps) {
           />
         </div>
       </div>
+
+      {/* Faixa full-width: "Gastos semanais" (03-UI-SPEC composição D) */}
+      <WeeklyCardsSection weeks={weeks} month={currentMonth} />
     </div>
   )
 }
