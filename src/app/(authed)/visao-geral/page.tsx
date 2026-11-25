@@ -20,10 +20,8 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
   const userId = user!.id
   const currentMonth = month ?? new Date().toISOString().slice(0, 7)
 
-  const { budget, totalSpentCents, categorySpending, weeklySpending } =
+  const { budget, totalSpentCents, categorySpending, weeklySpending, planTotalCents } =
     await loadDashboardData(userId, currentMonth)
-
-  const folgaCents = budget.ceilingCents - totalSpentCents
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,7 +33,7 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       <DashboardCards
         budget={budget}
         totalSpentCents={totalSpentCents}
-        folgaCents={folgaCents}
+        planTotalCents={planTotalCents}
         month={currentMonth}
       />
 
