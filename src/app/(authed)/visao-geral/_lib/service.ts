@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { weekIndexForDay } from '@/lib/weeks'
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -141,16 +142,7 @@ export async function getWeeklySpending(
 
   for (const tx of transactions) {
     const day = new Date(tx.date).getDate()
-    let index: number
-    if (day <= 7) {
-      index = 0
-    } else if (day <= 14) {
-      index = 1
-    } else if (day <= 21) {
-      index = 2
-    } else {
-      index = 3
-    }
+    const index = weekIndexForDay(day)
     buckets[index].totalCents += tx.amountCents
   }
 
