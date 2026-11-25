@@ -12,6 +12,7 @@
 - [ ] **Phase 1: Foundation** - Infraestrutura, autenticação e utilitários críticos antes de qualquer feature
 - [x] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa (completed 2026-11-24)
 - [x] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas (completed 2026-11-25)
+- [ ] **Phase 3.5: Casa — Acompanhamento (rework)** - substitui o planejamento semanal manual por barra "dinheiro do mês" + tetos por categoria + gasto semanal automático; remove PlanItem/WeeklySpend (ver docs/superpowers/specs/2026-11-25-casa-acompanhamento-design.md)
 - [ ] **Phase 4: Empresas (multi) e Renda Familiar** - Casa + N empresas independentes (P&L por empresa), pró-labore de cada → renda familiar, consolidado + projeção, dívidas e DAS por empresa (ver docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md)
 - [ ] **Phase 5: Calendário e Alertas** - Calendário de vencimentos com notificações push
 - [ ] **Phase 6: Relatório Mensal** - Relatório completo e exportação em PDF

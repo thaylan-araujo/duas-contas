@@ -76,6 +76,16 @@ São 9 telas. Um menu lateral fixo agrupa as telas em Visão geral, Casa, Empres
 
 ### 3. Planejamento e semanas (Casa)
 
+> **Atualizado 25/11/2026 — vira "Acompanhamento por categoria".** Esta seção (planejamento semanal manual) foi **substituída** por um modelo de acompanhamento. Precedência sobre a descrição manual abaixo. Design completo: `docs/superpowers/specs/2026-11-25-casa-acompanhamento-design.md`.
+>
+> **Novo modelo:**
+> - **Barra "Dinheiro do mês":** valor que o usuário define manualmente a cada mês (com base nas receitas lançadas, ex.: R$ 8.500); diminui a cada despesa e mostra quanto resta.
+> - **Teto mensal por categoria variável** (Alimentação, gasolina, refeição livre…): mostra "gastei X de Y" como **referência** (não trava nada).
+> - **Gasto semanal 100% automático:** somado dos lançamentos reais por semana (1–7 / 8–14 / 15–21 / 22–fim) e por categoria. Sem digitação manual.
+> - **Removido:** itens de plano manuais (valor × vezes × semanas), marcação de semanas, "Gastei R$ por semana" digitado, os 4 cartões semanais de planejado-vs-gastei, e qualquer trava de teto.
+>
+> *A descrição original (planejamento manual) fica abaixo só como histórico.*
+
 - O usuário define o **teto de gastos do mês** (padrão R$ 3.000).
 - Tabela de planejamento: cada gasto tem nome, grupo (Comida, Combustível, Lazer, Contas fixas, Outros), valor por vez e quantas vezes acontece no mês. O total do mês e a % do teto são calculados.
 - Os valores iniciais vêm da rotina atual:
