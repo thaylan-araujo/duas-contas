@@ -90,46 +90,29 @@ export async function deleteTransactionService(id: string, userId: string) {
 // ---------------------------------------------------------------------------
 
 /**
- * Creates two linked transactions atomically:
- * - SAIDA on EMPRESA
- * - ENTRADA on CASA
- * Both share the same pairId generated here.
- * T-02-09: prisma.$transaction guarantees either both records are created or neither.
+ * Mensagem de deferimento do pró-labore multi-origem (Open Question 3 / 04-RESEARCH).
+ * O pró-labore mapeava SAIDA na Empresa → ENTRADA na Casa usando o antigo enum
+ * `account`. Com o eixo empresaId (null = Casa), a mecânica correta precisa saber
+ * DE QUAL empresa sai o pró-labore, e isso depende da seleção de contexto que só
+ * chega numa fatia futura. Deixar ambos os lados com empresaId:null registraria
+ * a transferência como um lançamento comum da Casa (semântica errada) — por isso
+ * o fluxo é DESABILITADO nesta fatia em vez de neutralizado silenciosamente.
+ */
+export const PRO_LABORE_DEFERRED_MESSAGE =
+  'O pró-labore multi-empresa chega em uma próxima fatia.'
+
+/**
+ * DESABILITADO nesta fatia (04-02). A criação de pró-labore está deferida: a
+ * transferência Empresa → Casa precisa da origem (empresaId da empresa) que ainda
+ * não é selecionável. Lança um erro claro em vez de gravar empresaId:null nos dois
+ * lados (que mascararia a transferência como lançamento comum da Casa).
+ * A assinatura é mantida para compatibilidade de chamada; o fluxo real retorna
+ * na fatia de pró-labore multi-origem (deferred em 04-CONTEXT).
  */
 export async function createProLaboreService(
-  input: ProLaboreFormData & { userId: string }
-) {
-  const pairId = crypto.randomUUID()
-
-  return prisma.$transaction(async (tx) => {
-    const saida = await tx.transaction.create({
-      data: {
-        type: 'SAIDA',
-        account: 'EMPRESA',
-        description: 'Pró-labore',
-        date: parseISO(input.date),
-        amountCents: input.amountCents,
-        categoryId: input.categoryId,
-        userId: input.userId,
-        pairId,
-      },
-    })
-
-    const entrada = await tx.transaction.create({
-      data: {
-        type: 'ENTRADA',
-        account: 'CASA',
-        description: 'Pró-labore',
-        date: parseISO(input.date),
-        amountCents: input.amountCents,
-        categoryId: input.categoryId,
-        userId: input.userId,
-        pairId,
-      },
-    })
-
-    return { saida, entrada }
-  })
+  _input: ProLaboreFormData & { userId: string }
+): Promise<never> {
+  throw new Error(PRO_LABORE_DEFERRED_MESSAGE)
 }
 
 /**
@@ -158,7 +141,8 @@ export async function createCategoryService(
   return prisma.category.create({
     data: {
       name: data.name,
-      account: data.account,
+      empresaId: data.empresaId, // null = Casa
+      kind: data.kind ?? null,
       userId: data.userId,
       isDefault: false,
     },

@@ -33,8 +33,8 @@ export function ManageCategoriesSheet({
   const [isPending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const casaCategories = categories.filter((c) => c.account === 'CASA')
-  const empresaCategories = categories.filter((c) => c.account === 'EMPRESA')
+  const casaCategories = categories.filter((c) => c.empresaId === null)
+  const empresaCategories = categories.filter((c) => c.empresaId !== null)
 
   function startEdit(cat: Category) {
     setEditingId(cat.id)

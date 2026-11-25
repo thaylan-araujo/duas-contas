@@ -15,7 +15,7 @@ interface TransactionWithCategory {
   description: string
   amountCents: number
   type: 'ENTRADA' | 'SAIDA'
-  account: 'CASA' | 'EMPRESA'
+  empresaId: string | null // null = Casa
   categoryId: string
   notes?: string | null
   pairId: string | null
@@ -68,12 +68,12 @@ export function TransactionRow({ transaction, categories }: TransactionRowProps)
             <span
               className={cn(
                 'text-xs rounded-full px-2 py-0.5',
-                transaction.account === 'CASA'
+                transaction.empresaId === null
                   ? 'bg-casa-light text-casa'
                   : 'bg-empresa-light text-empresa'
               )}
             >
-              {transaction.account === 'CASA' ? 'Casa' : 'Empresa'}
+              {transaction.empresaId === null ? 'Casa' : 'Empresa'}
             </span>
           </div>
         </div>
@@ -114,12 +114,12 @@ export function TransactionRow({ transaction, categories }: TransactionRowProps)
           <span
             className={cn(
               'text-xs rounded-full px-2 py-0.5',
-              transaction.account === 'CASA'
+              transaction.empresaId === null
                 ? 'bg-casa-light text-casa'
                 : 'bg-empresa-light text-empresa'
             )}
           >
-            {transaction.account === 'CASA' ? 'Casa' : 'Empresa'}
+            {transaction.empresaId === null ? 'Casa' : 'Empresa'}
           </span>
         </td>
         <td className="px-4 py-3">

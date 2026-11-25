@@ -27,11 +27,13 @@ export function AccountFilterToggle({ currentAccount }: AccountFilterToggleProps
     const params = new URLSearchParams(searchParams.toString())
     if (value === 'ALL') {
       params.delete('account')
-      setContaAtiva('CASA')
     } else {
       params.set('account', value)
-      setContaAtiva(value as 'CASA' | 'EMPRESA')
     }
+    // Nesta fatia (04-02) o contexto ativo é sempre a Casa; a seleção de empresa
+    // chega com o ContaSelector (Plano 04-04). Mantemos o filtro por URL (account)
+    // para Casa/Empresa/Todos, mas o store só representa Casa por ora.
+    setContaAtiva({ tipo: 'CASA' })
     router.push(`/lancamentos?${params.toString()}`)
   }
 

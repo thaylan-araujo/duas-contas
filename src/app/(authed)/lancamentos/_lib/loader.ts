@@ -1,19 +1,19 @@
 // src/app/(authed)/lancamentos/_lib/loader.ts
 // Server-side data loading utilities — no 'use server' (called from Server Components directly)
 import { prisma } from '@/lib/prisma'
-import { ContaType } from '@prisma/client'
 
 /**
- * Loads transactions for a user filtered by month and optionally by account.
+ * Loads transactions for a user filtered by month and optionally by empresa.
  * month: "YYYY-MM" string from URL search params.
- * account: "CASA" | "EMPRESA" | undefined — if undefined, returns all accounts.
+ * empresaId: string (empresa) | null (Casa) | undefined (all) — if undefined,
+ * returns every context; null filters the Casa (empresaId IS NULL).
  */
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/
 
 export async function getTransactions(
   userId: string,
   month: string,
-  account?: string
+  empresaId?: string | null
 ) {
   if (!monthRegex.test(month)) {
     throw new Error('Formato de mês inválido')
@@ -26,7 +26,7 @@ export async function getTransactions(
     where: {
       userId,
       date: { gte: start, lte: end },
-      ...(account ? { account: account as ContaType } : {}),
+      ...(empresaId !== undefined ? { empresaId } : {}),
     },
     include: { category: true },
     orderBy: { date: 'desc' },

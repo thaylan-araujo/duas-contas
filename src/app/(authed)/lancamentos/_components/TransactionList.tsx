@@ -16,7 +16,7 @@ interface TransactionWithCategory {
   description: string
   amountCents: number
   type: 'ENTRADA' | 'SAIDA'
-  account: 'CASA' | 'EMPRESA'
+  empresaId: string | null // null = Casa
   categoryId: string
   notes?: string | null
   pairId: string | null

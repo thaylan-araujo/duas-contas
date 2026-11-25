@@ -42,7 +42,7 @@ interface ExistingTransaction {
   description: string
   amountCents: number
   type: 'ENTRADA' | 'SAIDA'
-  account: 'CASA' | 'EMPRESA'
+  empresaId: string | null // null = Casa
   categoryId: string
   notes?: string | null
   pairId: string | null
@@ -53,6 +53,9 @@ interface TransactionSheetProps {
   onClose: () => void
   transaction?: ExistingTransaction
   categories: Category[]
+  // empresaId do contexto ativo (null = Casa). Nesta fatia (04-02) o default é a
+  // Casa; o Plano 04-04 liga o contexto real de empresa selecionada.
+  empresaIdContexto?: string | null
 }
 
 function formatDateInput(date: Date): string {
@@ -83,6 +86,7 @@ export function TransactionSheet({
   onClose,
   transaction,
   categories: initialCategories,
+  empresaIdContexto = null,
 }: TransactionSheetProps) {
   const isEditing = !!transaction
   const isPaired = transaction?.pairId !== null && transaction?.pairId !== undefined
@@ -123,7 +127,7 @@ export function TransactionSheet({
       description: '',
       amountCents: 0,
       type: 'SAIDA',
-      account: 'CASA',
+      empresaId: empresaIdContexto,
       categoryId: '',
       notes: '',
     },
@@ -143,7 +147,7 @@ export function TransactionSheet({
           description: transaction.description,
           amountCents: transaction.amountCents,
           type: transaction.type,
-          account: transaction.account,
+          empresaId: transaction.empresaId,
           categoryId: transaction.categoryId,
           notes: transaction.notes ?? '',
         })
@@ -153,50 +157,37 @@ export function TransactionSheet({
           description: '',
           amountCents: 0,
           type: 'SAIDA',
-          account: 'CASA',
+          empresaId: empresaIdContexto,
           categoryId: '',
           notes: '',
         })
       }
     }
-  }, [open, transaction, reset])
+  }, [open, transaction, reset, empresaIdContexto])
 
-  const watchedAccount = watch('account')
   const watchedType = watch('type')
   const watchedAmountCents = watch('amountCents')
   const watchedCategoryId = watch('categoryId')
 
-  // Filter categories by selected account
+  // Filter categories by the active context (empresaId null = Casa).
   const filteredCategories = categories.filter(
-    (c) => c.account === watchedAccount
+    (c) => c.empresaId === empresaIdContexto
   )
 
   // Format amount display for preview
   const amountPreview =
     watchedAmountCents > 0 ? formatBRL(watchedAmountCents) : null
 
-  // Find the "Pró-labore" seeded category for EMPRESA account
-  const proLaboreCategory =
-    categories.find((c) => c.name === 'Pró-labore' && c.account === 'EMPRESA') ??
-    categories.find((c) => c.account === 'EMPRESA')
-
-  // When pró-labore mode activates, auto-select the pró-labore category
-  useEffect(() => {
-    if (isProLabore && proLaboreCategory) {
-      setValue('categoryId', proLaboreCategory.id, { shouldValidate: false })
-      setValue('account', 'EMPRESA', { shouldValidate: false })
-    }
-  }, [isProLabore, proLaboreCategory, setValue])
-
+  // Pró-labore multi-empresa está DESABILITADO nesta fatia (04-02): a mecânica
+  // multi-origem (Empresa → Casa) depende da seleção de empresa que chega numa
+  // fatia futura. A opção não é selecionável — ver handleTipoChange.
   function handleTipoChange(value: string) {
     if (value === PRO_LABORE_SENTINEL) {
-      setIsProLabore(true)
-      clearErrors('account')
-      clearErrors('type')
-    } else {
-      setIsProLabore(false)
-      setValue('type', value as 'ENTRADA' | 'SAIDA', { shouldValidate: false })
+      // no-op: opção desabilitada nesta fatia
+      return
     }
+    setIsProLabore(false)
+    setValue('type', value as 'ENTRADA' | 'SAIDA', { shouldValidate: false })
   }
 
   function handleCategoryChange(value: string) {
@@ -220,14 +211,16 @@ export function TransactionSheet({
     startCategoryTransition(async () => {
       const result = await createCategoryAction(null, {
         name: newCategoryName.trim(),
-        account: watchedAccount,
+        empresaId: empresaIdContexto,
+        kind: null,
       })
 
       if (result.success && result.categoryId) {
         const newCat: Category = {
           id: result.categoryId,
           name: newCategoryName.trim(),
-          account: watchedAccount,
+          empresaId: empresaIdContexto,
+          kind: null,
           userId: '',
           isDefault: false,
           createdAt: new Date(),
@@ -440,55 +433,10 @@ function SheetFormContent({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pb-6" noValidate>
 
-      {/* Conta toggle — replaced by fixed text in pró-labore mode */}
-      {isProLabore ? (
-        <div className="space-y-1.5">
-          <Label className="text-sm font-medium text-text-primary">Conta</Label>
-          <div className="rounded-lg bg-bg border border-border px-4 min-h-[44px] flex items-center">
-            <p className="text-sm text-text-secondary">
-              Saída da Empresa → Entrada na Casa
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-1.5">
-          <Label className="text-sm font-medium text-text-primary">Conta</Label>
-          <Controller
-            name="account"
-            control={control}
-            render={({ field }) => (
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => { field.onChange('CASA'); clearErrors('categoryId') }}
-                  className={cn(
-                    'flex-1 min-h-[44px] rounded-lg text-sm font-medium transition-colors border',
-                    field.value === 'CASA'
-                      ? 'bg-casa-light text-casa border-casa'
-                      : 'bg-card text-text-secondary border-border hover:bg-bg'
-                  )}
-                >
-                  Casa
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { field.onChange('EMPRESA'); clearErrors('categoryId') }}
-                  className={cn(
-                    'flex-1 min-h-[44px] rounded-lg text-sm font-medium transition-colors border',
-                    field.value === 'EMPRESA'
-                      ? 'bg-empresa-light text-empresa border-empresa'
-                      : 'bg-card text-text-secondary border-border hover:bg-bg'
-                  )}
-                >
-                  Empresa
-                </button>
-              </div>
-            )}
-          />
-        </div>
-      )}
+      {/* O contexto (Casa/empresa) vem do seletor global, não é escolhido aqui.
+          O toggle Casa/Empresa foi removido nesta fatia (04-02). */}
 
-      {/* Tipo — includes Pró-labore option */}
+      {/* Tipo — a opção Pró-labore está desabilitada nesta fatia (deferida) */}
       <div className="space-y-1.5">
         <Label htmlFor="type" className="text-sm font-medium text-text-primary">
           Tipo
@@ -503,8 +451,9 @@ function SheetFormContent({
           <SelectContent>
             <SelectItem value="ENTRADA">Entrada</SelectItem>
             <SelectItem value="SAIDA">Saída</SelectItem>
-            <SelectItem value={PRO_LABORE_SENTINEL}>
-              Pró-labore (Empresa → Casa)
+            {/* Pró-labore multi-empresa chega em uma próxima fatia (deferido 04-02) */}
+            <SelectItem value={PRO_LABORE_SENTINEL} disabled>
+              Pró-labore (em breve)
             </SelectItem>
           </SelectContent>
         </Select>

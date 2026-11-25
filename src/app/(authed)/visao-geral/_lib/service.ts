@@ -59,7 +59,7 @@ export async function getTotalSpent(userId: string, month: string): Promise<numb
     _sum: { amountCents: true },
     where: {
       userId,
-      account: 'CASA',
+      empresaId: null, // Casa
       type: 'SAIDA',
       date: { gte: start, lte: end },
     },
@@ -84,7 +84,7 @@ export async function getCategorySpending(
     by: ['categoryId'],
     where: {
       userId,
-      account: 'CASA',
+      empresaId: null, // Casa
       type: 'SAIDA',
       date: { gte: start, lte: end },
     },
@@ -126,7 +126,7 @@ export async function getWeeklySpending(
   const transactions = await prisma.transaction.findMany({
     where: {
       userId,
-      account: 'CASA',
+      empresaId: null, // Casa
       type: 'SAIDA',
       date: { gte: start, lte: end },
     },

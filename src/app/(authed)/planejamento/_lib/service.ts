@@ -215,7 +215,7 @@ export async function getOrCreatePlan(userId: string, month: string) {
   // First month, no history → pre-fill the spec routine (D-04).
   // Resolve each routine item's grupo to the user's seeded Casa category.
   const casaCategories = await prisma.category.findMany({
-    where: { userId, account: 'CASA' },
+    where: { userId, empresaId: null }, // Casa
     select: { id: true, name: true },
   })
   const idByName = new Map(casaCategories.map((c) => [c.name, c.id]))
@@ -348,7 +348,7 @@ export async function copyPlanFromPreviousMonth(userId: string, month: string) {
  * CASA SAIDA dessa categoria cujo `date` cai na faixa da semana `weekIndex` do
  * `month` (D-02). Reutiliza `weekDateRange` (fonte única das faixas — Plano 01),
  * de modo que os cartões semanais e o gráfico do dashboard concordem.
- * Sempre filtra por userId (T-03-13) e força account 'CASA'.
+ * Sempre filtra por userId (T-03-13) e força a Casa (empresaId null).
  */
 export async function getAutoGastei(
   userId: string,
@@ -371,7 +371,7 @@ export async function getAutoGastei(
     _sum: { amountCents: true },
     where: {
       userId,
-      account: 'CASA',
+      empresaId: null, // Casa
       type: 'SAIDA',
       categoryId,
       date: { gte: start, lte: endOfDay },

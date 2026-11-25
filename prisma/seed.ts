@@ -28,7 +28,7 @@ if (process.env.DIRECT_URL) {
   process.env.DATABASE_URL = process.env.DIRECT_URL
 }
 
-import { PrismaClient, ContaType } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -48,7 +48,8 @@ async function main() {
   })
   console.log(`Usuário criado/atualizado: ${SUPABASE_USER_ID}`)
 
-  // 2. Categorias padrão — CASA
+  // 2. Categorias padrão — Casa (empresaId: null). As categorias por empresa
+  //    são semeadas por empresa no Plano 04-03 (não aqui).
   const casaCategories = [
     'Alimentação',
     'Combustível',
@@ -57,44 +58,21 @@ async function main() {
     'Outros',
   ]
   for (const name of casaCategories) {
-    await prisma.category.upsert({
-      where: {
-        name_account_userId: {
-          name,
-          account: ContaType.CASA,
-          userId: SUPABASE_USER_ID,
-        },
-      },
-      update: {},
-      create: { name, account: ContaType.CASA, userId: SUPABASE_USER_ID, isDefault: true },
+    // empresaId NULL (Casa): o where composto do Prisma não aceita null diretamente,
+    // então usamos findFirst + create (idempotente — o índice NULLS NOT DISTINCT no
+    // banco garante que não haja duplicata sob concorrência).
+    const existing = await prisma.category.findFirst({
+      where: { name, empresaId: null, userId: SUPABASE_USER_ID },
     })
-    console.log(`Categoria CASA criada/atualizada: ${name}`)
+    if (!existing) {
+      await prisma.category.create({
+        data: { name, empresaId: null, userId: SUPABASE_USER_ID, isDefault: true },
+      })
+    }
+    console.log(`Categoria Casa criada/atualizada: ${name}`)
   }
 
-  // 3. Categorias padrão — EMPRESA
-  const empresaCategories = [
-    'Fornecedores',
-    'Anúncios',
-    'Taxas e impostos',
-    'Pró-labore',
-    'Outros',
-  ]
-  for (const name of empresaCategories) {
-    await prisma.category.upsert({
-      where: {
-        name_account_userId: {
-          name,
-          account: ContaType.EMPRESA,
-          userId: SUPABASE_USER_ID,
-        },
-      },
-      update: {},
-      create: { name, account: ContaType.EMPRESA, userId: SUPABASE_USER_ID, isDefault: true },
-    })
-    console.log(`Categoria EMPRESA criada/atualizada: ${name}`)
-  }
-
-  console.log('\nSeed concluído: 1 usuário + 10 categorias (5 CASA + 5 EMPRESA)')
+  console.log('\nSeed concluído: 1 usuário + 5 categorias da Casa (empresaId null)')
 }
 
 main()

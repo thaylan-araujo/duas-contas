@@ -25,8 +25,14 @@ export default async function LancamentosPage({ searchParams }: PageProps) {
 
   const currentMonth = month ?? new Date().toISOString().slice(0, 7)
 
+  // Traduz o filtro de URL (eixo antigo CASA/EMPRESA) para empresaId:
+  // 'CASA' → null (Casa); ausente → undefined (todos). A seleção real de empresa
+  // chega com o ContaSelector (Plano 04-04); por ora 'EMPRESA' também cai em "todos".
+  const empresaIdFilter: string | null | undefined =
+    account === 'CASA' ? null : undefined
+
   const [transactions, categories] = await Promise.all([
-    getTransactions(userId, currentMonth, account),
+    getTransactions(userId, currentMonth, empresaIdFilter),
     getCategories(userId),
   ])
 

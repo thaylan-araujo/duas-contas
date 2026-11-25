@@ -156,13 +156,15 @@ export function PlanItemSheet({
     startCategoryTransition(async () => {
       const result = await createCategoryAction(null, {
         name: newCategoryName.trim(),
-        account: 'CASA',
+        empresaId: null, // Casa
+        kind: null,
       })
       if (result.success && result.categoryId) {
         const newCat: Category = {
           id: result.categoryId,
           name: newCategoryName.trim(),
-          account: 'CASA',
+          empresaId: null,
+          kind: null,
           userId: '',
           isDefault: false,
           createdAt: new Date(),

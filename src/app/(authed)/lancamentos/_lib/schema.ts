@@ -7,7 +7,7 @@ export const transactionSchema = z.object({
   description: z.string().min(1, 'A descrição é obrigatória.').max(120, 'Máximo 120 caracteres'),
   amountCents: z.number().int().positive('Digite um valor maior que zero.'),
   type: z.enum(['ENTRADA', 'SAIDA']),
-  account: z.enum(['CASA', 'EMPRESA']),
+  empresaId: z.string().nullable(), // null = Casa
   categoryId: z.string().min(1, 'Selecione uma categoria.'),
   notes: z.string().max(200, 'Máximo 200 caracteres').optional(),
 })
@@ -34,7 +34,8 @@ export type ProLaboreFormData = z.infer<typeof proLaboreSchema>
 
 export const categoryCreateSchema = z.object({
   name: z.string().min(1, 'Nome obrigatório').max(50, 'Máximo 50 caracteres'),
-  account: z.enum(['CASA', 'EMPRESA']),
+  empresaId: z.string().nullable(), // null = Casa
+  kind: z.enum(['RECEITA', 'CUSTO']).nullable().optional(), // null para Casa
 })
 
 export type CategoryCreateData = z.infer<typeof categoryCreateSchema>

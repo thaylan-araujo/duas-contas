@@ -89,7 +89,7 @@ export async function loadPlanData(userId: string, month: string) {
       getWeeklySpends(userId, month),
     ])
 
-  const casaCategories = allCategories.filter((c) => c.account === 'CASA')
+  const casaCategories = allCategories.filter((c) => c.empresaId === null)
   const hasPreviousPlan = prior !== null
 
   // Derived read-only "Contas fixas" rows (D-05/PLAN-06) — NOT persisted.
