@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { loadEmpresasData } from './_lib/loader'
 import { EmpresaCard } from './_components/EmpresaCard'
 import { NewEmpresaButton, NewEmpresaAddCard } from './_components/NewEmpresaButton'
+import { EmpresaCategoriesSection } from './_components/EmpresaCategoriesSection'
 
 export default async function EmpresasPage() {
   const supabase = await createSupabaseServerClient()
@@ -54,18 +55,16 @@ export default async function EmpresasPage() {
                 lancamentoCount: empresa.lancamentoCount,
               }}
               categoriasSlot={
-                <div className="space-y-2">
-                  <p className="text-sm text-text-secondary">
-                    Receitas e custos usados nos lançamentos desta empresa.
-                  </p>
-                  <ul className="divide-y divide-border">
-                    {empresa.categorias.map((c) => (
-                      <li key={c.id} className="py-2 text-sm text-text-primary">
-                        {c.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <EmpresaCategoriesSection
+                  empresaId={empresa.id}
+                  cor={empresa.cor}
+                  categorias={empresa.categorias.map((c) => ({
+                    id: c.id,
+                    name: c.name,
+                    kind: c.kind,
+                    isDefault: c.isDefault,
+                  }))}
+                />
               }
             />
           ))}
