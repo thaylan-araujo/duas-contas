@@ -73,6 +73,33 @@ export async function getTotalSpent(
 }
 
 /**
+ * Returns the total income (ENTRADA) in a given month for the active context.
+ * É o "dinheiro do mês" (D-02/D-06): soma automática das entradas, não editável.
+ * empresaId: null = Casa (empresaId IS NULL) | string = empresa específica.
+ */
+export async function getTotalEntradas(
+  userId: string,
+  month: string,
+  empresaId: string | null = null
+): Promise<number> {
+  if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
+  const [year, monthNum] = month.split('-').map(Number)
+  const start = new Date(year, monthNum - 1, 1)
+  const end = new Date(year, monthNum, 0, 23, 59, 59, 999)
+
+  const result = await prisma.transaction.aggregate({
+    _sum: { amountCents: true },
+    where: {
+      userId,
+      empresaId, // null = Casa; id = empresa ativa
+      type: 'ENTRADA',
+      date: { gte: start, lte: end },
+    },
+  })
+  return result._sum.amountCents ?? 0
+}
+
+/**
  * Returns spending per category for CASA SAIDA transactions in a month,
  * sorted descending by total (highest spend first).
  */

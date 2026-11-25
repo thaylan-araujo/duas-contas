@@ -23,7 +23,7 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
   const empresaIdContexto: string | null = empresaId ?? null
 
   const {
-    budget,
+    dinheiroMesCents,
     totalSpentCents,
     restanteCents,
     categorySpending,
@@ -37,10 +37,9 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       </div>
 
       <DashboardCards
-        budget={budget}
+        dinheiroMesCents={dinheiroMesCents}
         totalSpentCents={totalSpentCents}
         restanteCents={restanteCents}
-        month={currentMonth}
         isEmpresa={empresaIdContexto !== null}
       />
 

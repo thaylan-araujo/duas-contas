@@ -2,7 +2,7 @@
 // Carregamento server-side do acompanhamento — sem 'use server' (chamado do
 // Server Component). Monta: dinheiro do mês + restante (D-02), gasto por
 // categoria vs teto (D-03) e o semanal automático por categoria (D-04).
-import { getOrCreateMonthlyBudget, getTotalSpent } from '../../visao-geral/_lib/service'
+import { getTotalEntradas, getTotalSpent } from '../../visao-geral/_lib/service'
 import {
   getCasaCategorySpending,
   getCategoryBudgets,
@@ -30,7 +30,7 @@ export interface CategoriaAcompanhamento {
 
 export interface AcompanhamentoData {
   month: string
-  /** "Dinheiro do mês" (MonthlyBudget.ceilingCents) — D-02. */
+  /** "Dinheiro do mês" = soma automática das ENTRADAS da Casa no mês — D-02/D-06. */
   dinheiroMesCents: number
   /** Despesas (SAIDA) da Casa no mês — D-02. */
   despesasMesCents: number
@@ -57,16 +57,20 @@ export async function loadAcompanhamentoData(
   // Auto-copy dos tetos do mês anterior (D-03) antes de ler os tetos deste mês.
   await getOrCopyCategoryBudgets(userId, month)
 
-  const [budget, despesasMesCents, categorySpending, budgets, weeklyTransactions] =
-    await Promise.all([
-      getOrCreateMonthlyBudget(userId, month), // dinheiro do mês (D-02)
-      getTotalSpent(userId, month, null), // despesas Casa do mês (D-02)
-      getCasaCategorySpending(userId, month), // gasto por categoria (D-03)
-      getCategoryBudgets(userId, month), // tetos do mês (D-03)
-      getCasaWeeklyTransactions(userId, month), // lançamentos p/ o semanal (D-04)
-    ])
+  const [
+    dinheiroMesCents,
+    despesasMesCents,
+    categorySpending,
+    budgets,
+    weeklyTransactions,
+  ] = await Promise.all([
+    getTotalEntradas(userId, month, null), // dinheiro do mês = entradas Casa (D-02/D-06)
+    getTotalSpent(userId, month, null), // despesas Casa do mês (D-02)
+    getCasaCategorySpending(userId, month), // gasto por categoria (D-03)
+    getCategoryBudgets(userId, month), // tetos do mês (D-03)
+    getCasaWeeklyTransactions(userId, month), // lançamentos p/ o semanal (D-04)
+  ])
 
-  const dinheiroMesCents = budget.ceilingCents
   const restanteCents = computeRestanteMes(dinheiroMesCents, despesasMesCents)
 
   const categorias: CategoriaAcompanhamento[] = categorySpending.map((c) => {

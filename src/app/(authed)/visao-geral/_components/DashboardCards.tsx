@@ -1,29 +1,29 @@
-import { type MonthlyBudget } from '@prisma/client'
 import { formatBRL } from '@/lib/format'
-import { InlineCeilingEditor } from './InlineCeilingEditor'
 
 interface DashboardCardsProps {
-  budget: MonthlyBudget
+  /**
+   * "Dinheiro do mês" = soma automática das ENTRADAS da Casa no mês (D-06).
+   * Valor calculado dos lançamentos, não editável.
+   */
+  dinheiroMesCents: number
   totalSpentCents: number
   restanteCents: number
-  month: string
   /**
-   * true quando o contexto ativo é uma empresa. Empresas não têm "dinheiro do
-   * mês"/teto (o MonthlyBudget é da Casa) — nesse caso ocultamos os cards
-   * "Dinheiro do mês" e "Restante do mês" e mostramos só "Gasto até hoje"
-   * (03b-03/D-06; T-03b-22 — lógica de empresa inalterada).
+   * true quando o contexto ativo é uma empresa. Empresas usam o mesmo cálculo
+   * de entradas/despesas, mas aqui o dashboard de acompanhamento é da Casa —
+   * nesse caso mostramos só "Gasto até hoje" (03b-03/D-06; T-03b-22 — lógica de
+   * empresa inalterada).
    */
   isEmpresa?: boolean
 }
 
 export function DashboardCards({
-  budget,
+  dinheiroMesCents,
   totalSpentCents,
   restanteCents,
-  month,
   isEmpresa = false,
 }: DashboardCardsProps) {
-  // Contexto de empresa: sem dinheiro do mês/restante — só "Gasto até hoje".
+  // Contexto de empresa: dashboard de acompanhamento é da Casa — só "Gasto até hoje".
   if (isEmpresa) {
     return (
       <div className="grid grid-cols-1 gap-4">
@@ -44,12 +44,14 @@ export function DashboardCards({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {/* Card 1 — Dinheiro do mês (editável inline, MonthlyBudget.ceilingCents — D-02/CASA-R-01) */}
+      {/* Card 1 — Dinheiro do mês = soma das ENTRADAS da Casa no mês (calculado, não editável — D-06) */}
       <div className="rounded-2xl shadow-sm border border-border p-6 bg-card">
         <p className="text-sm text-text-secondary font-sans mb-2">
           Dinheiro do mês
         </p>
-        <InlineCeilingEditor initialCents={budget.ceilingCents} month={month} />
+        <span className="text-2xl font-semibold font-mono text-text-primary">
+          {formatBRL(dinheiroMesCents)}
+        </span>
       </div>
 
       {/* Card 2 — Restante do mês = dinheiro do mês − despesas da Casa no mês (D-06) */}

@@ -1,5 +1,5 @@
 import {
-  getOrCreateMonthlyBudget,
+  getTotalEntradas,
   getTotalSpent,
   getCategorySpending,
   getWeeklySpending,
@@ -11,32 +11,33 @@ import { computeRestanteMes } from '@/app/(authed)/planejamento/_lib/acompanhame
  * Called by the visao-geral Server Component page.
  *
  * Modelo de acompanhamento (03b-03/D-06): o dashboard não depende mais do plano
- * manual (modelos PlanItem/WeeklySpend removidos em 03b-01/02). Devolve budget,
- * totalSpentCents, restanteCents, categorySpending e weeklySpending.
+ * manual (modelos PlanItem/WeeklySpend removidos em 03b-01/02) nem de
+ * MonthlyBudget.ceilingCents como "dinheiro do mês".
  *
- * `restanteCents` = dinheiro do mês (budget.ceilingCents) − despesas (SAIDA) no
- * mês. Reusa a função pura `computeRestanteMes` (fonte única do cálculo — ver
+ * `dinheiroMesCents` = soma automática das ENTRADAS da Casa no mês (não
+ * editável). `restanteCents` = dinheiro do mês − despesas (SAIDA) no mês,
+ * reusando a função pura `computeRestanteMes` (fonte única — ver
  * planejamento/_lib/acompanhamento.ts, D-02). O restante é significativo no
- * contexto Casa (empresaId null); no contexto de empresa não há "dinheiro do
- * mês"/teto — o card correspondente fica oculto na UI (ver DashboardCards).
+ * contexto Casa (empresaId null); no contexto de empresa o card "Dinheiro do
+ * mês"/"Restante" fica oculto na UI (ver DashboardCards).
  */
 export async function loadDashboardData(
   userId: string,
   month: string,
   empresaId: string | null = null
 ) {
-  const [budget, totalSpentCents, categorySpending, weeklySpending] =
+  const [dinheiroMesCents, totalSpentCents, categorySpending, weeklySpending] =
     await Promise.all([
-      getOrCreateMonthlyBudget(userId, month),
+      getTotalEntradas(userId, month, empresaId),
       getTotalSpent(userId, month, empresaId),
       getCategorySpending(userId, month, empresaId),
       getWeeklySpending(userId, month, empresaId),
     ])
 
-  const restanteCents = computeRestanteMes(budget.ceilingCents, totalSpentCents)
+  const restanteCents = computeRestanteMes(dinheiroMesCents, totalSpentCents)
 
   return {
-    budget,
+    dinheiroMesCents,
     totalSpentCents,
     restanteCents,
     categorySpending,

@@ -49,9 +49,8 @@ export default async function PlanejamentoPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      {/* Barra "Dinheiro do mês" (D-02) */}
+      {/* Barra "Dinheiro do mês" (D-02/D-06) */}
       <MesBar
-        month={currentMonth}
         dinheiroMesCents={dinheiroMesCents}
         despesasMesCents={despesasMesCents}
         restanteCents={restanteCents}
