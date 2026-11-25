@@ -23,7 +23,6 @@ import {
 import { formatBRL } from '@/lib/format'
 import {
   transactionSchema,
-  proLaboreSchema,
   type TransactionFormData,
   type ProLaboreFormData,
 } from '../_lib/schema'
@@ -338,7 +337,6 @@ export function TransactionSheet({
     control,
     register,
     errors,
-    watchedAccount,
     watchedCategoryId,
     filteredCategories,
     amountPreview,
@@ -398,7 +396,6 @@ interface SheetFormContentProps {
   control: ReturnType<typeof useForm<TransactionFormData>>['control']
   register: ReturnType<typeof useForm<TransactionFormData>>['register']
   errors: ReturnType<typeof useForm<TransactionFormData>>['formState']['errors']
-  watchedAccount: 'CASA' | 'EMPRESA'
   watchedCategoryId: string
   filteredCategories: Category[]
   amountPreview: string | null
@@ -425,7 +422,6 @@ function SheetFormContent({
   control,
   register,
   errors,
-  watchedAccount,
   watchedCategoryId,
   filteredCategories,
   amountPreview,
