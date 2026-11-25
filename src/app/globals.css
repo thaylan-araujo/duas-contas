@@ -28,6 +28,27 @@
   --color-empresa-cinza: #475569;
   --color-empresa-cinza-light: #E2E8F0;
 
+  /* Aliases dos tokens padrão do shadcn/ui, mapeados para a paleta do projeto.
+     Sem eles, componentes de painel (Sheet, Dialog, DropdownMenu, Select) ficam
+     com fundo transparente sobre a cortina preta — aparecendo "tudo preto". */
+  --color-background: #FFFFFF;
+  --color-foreground: #0F1B2D;
+  --color-card-foreground: #0F1B2D;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #0F1B2D;
+  --color-primary: #1D4ED8;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #F3F5F7;
+  --color-secondary-foreground: #0F1B2D;
+  --color-muted: #F3F5F7;
+  --color-muted-foreground: #5B6675;
+  --color-accent: #F3F5F7;
+  --color-accent-foreground: #0F1B2D;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  --color-input: #E3E7EC;
+  --color-ring: #1D4ED8;
+
   /* Fonts wired from next/font CSS variables */
   --font-sans: var(--font-manrope);
   --font-mono: var(--font-ibm-plex-mono);
