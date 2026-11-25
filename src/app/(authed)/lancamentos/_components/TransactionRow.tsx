@@ -25,9 +25,15 @@ interface TransactionWithCategory {
 interface TransactionRowProps {
   transaction: TransactionWithCategory
   categories: Category[]
+  // empresaId do contexto ativo (null = Casa) — contexto da tela de lançamentos.
+  empresaIdContexto?: string | null
 }
 
-export function TransactionRow({ transaction, categories }: TransactionRowProps) {
+export function TransactionRow({
+  transaction,
+  categories,
+  empresaIdContexto = null,
+}: TransactionRowProps) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -154,12 +160,14 @@ export function TransactionRow({ transaction, categories }: TransactionRowProps)
         </td>
       </tr>
 
-      {/* Sheet for editing */}
+      {/* Sheet for editing — ao editar, o contexto de categorias é o da própria
+          transação (empresaId dela); empresaIdContexto cobre o caso-base. */}
       <TransactionSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         transaction={transaction}
         categories={categories}
+        empresaIdContexto={transaction.empresaId ?? empresaIdContexto}
       />
 
       {/* Delete confirmation dialog */}

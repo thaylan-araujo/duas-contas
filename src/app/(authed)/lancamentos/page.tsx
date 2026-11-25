@@ -4,16 +4,15 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getTransactions, getCategories } from './_lib/loader'
 import { TransactionList } from './_components/TransactionList'
 import { MonthSelector } from './_components/MonthSelector'
-import { AccountFilterToggle } from './_components/AccountFilterToggle'
 import { NewTransactionButton } from './_components/NewTransactionButton'
 import { ManageCategoriesButton } from './_components/ManageCategoriesButton'
 
 interface PageProps {
-  searchParams: Promise<{ month?: string; account?: string }>
+  searchParams: Promise<{ month?: string; empresaId?: string }>
 }
 
 export default async function LancamentosPage({ searchParams }: PageProps) {
-  const { month, account } = await searchParams
+  const { month, empresaId } = await searchParams
 
   const supabase = await createSupabaseServerClient()
   const {
@@ -25,14 +24,12 @@ export default async function LancamentosPage({ searchParams }: PageProps) {
 
   const currentMonth = month ?? new Date().toISOString().slice(0, 7)
 
-  // Traduz o filtro de URL (eixo antigo CASA/EMPRESA) para empresaId:
-  // 'CASA' → null (Casa); ausente → undefined (todos). A seleção real de empresa
-  // chega com o ContaSelector (Plano 04-04); por ora 'EMPRESA' também cai em "todos".
-  const empresaIdFilter: string | null | undefined =
-    account === 'CASA' ? null : undefined
+  // Contexto ativo (ContaSelector global): empresaId presente = empresa; ausente = Casa.
+  // Casa filtra empresaId IS NULL; empresa filtra pelo id. (D-06 / EMPF-06)
+  const empresaIdContexto: string | null = empresaId ?? null
 
   const [transactions, categories] = await Promise.all([
-    getTransactions(userId, currentMonth, empresaIdFilter),
+    getTransactions(userId, currentMonth, empresaIdContexto),
     getCategories(userId),
   ])
 
@@ -43,14 +40,16 @@ export default async function LancamentosPage({ searchParams }: PageProps) {
         <h1 className="text-xl font-semibold text-text-primary">Lançamentos</h1>
         <div className="flex items-center gap-2">
           <ManageCategoriesButton categories={categories} />
-          <NewTransactionButton categories={categories} />
+          <NewTransactionButton
+            categories={categories}
+            empresaIdContexto={empresaIdContexto}
+          />
         </div>
       </div>
 
-      {/* Month selector + Account filter */}
+      {/* Month selector */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <MonthSelector currentMonth={currentMonth} />
-        <AccountFilterToggle currentAccount={account} />
       </div>
 
       {/* Transaction list */}
@@ -58,6 +57,7 @@ export default async function LancamentosPage({ searchParams }: PageProps) {
         transactions={transactions}
         categories={categories}
         currentMonth={currentMonth}
+        empresaIdContexto={empresaIdContexto}
       />
     </div>
   )

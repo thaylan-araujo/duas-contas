@@ -15,7 +15,11 @@ import { getPlanTotal } from '../../planejamento/_lib/service'
  * accounts). It is `null` only when the month has NO plan items AND NO fixed
  * accounts, so a brand-new month still shows the "--" fallback (03-UI-SPEC).
  */
-export async function loadDashboardData(userId: string, month: string) {
+export async function loadDashboardData(
+  userId: string,
+  month: string,
+  empresaId: string | null = null
+) {
   const [
     budget,
     totalSpentCents,
@@ -26,9 +30,9 @@ export async function loadDashboardData(userId: string, month: string) {
     hasFixedAccount,
   ] = await Promise.all([
     getOrCreateMonthlyBudget(userId, month),
-    getTotalSpent(userId, month),
-    getCategorySpending(userId, month),
-    getWeeklySpending(userId, month),
+    getTotalSpent(userId, month, empresaId),
+    getCategorySpending(userId, month, empresaId),
+    getWeeklySpending(userId, month, empresaId),
     getPlanTotal(userId, month),
     prisma.planItem.findFirst({ where: { userId, month }, select: { id: true } }),
     prisma.fixedAccount.findFirst({ where: { userId }, select: { id: true } }),

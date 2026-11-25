@@ -208,11 +208,20 @@ export function TransactionSheet({
     }
     setNewCategoryError('')
 
+    // Para empresa (empresaId != null) a categoria nasce com kind derivado do tipo
+    // do lançamento: ENTRADA → RECEITA, SAIDA → CUSTO. Casa continua com kind null.
+    const kind: 'RECEITA' | 'CUSTO' | null =
+      empresaIdContexto === null
+        ? null
+        : watchedType === 'ENTRADA'
+        ? 'RECEITA'
+        : 'CUSTO'
+
     startCategoryTransition(async () => {
       const result = await createCategoryAction(null, {
         name: newCategoryName.trim(),
         empresaId: empresaIdContexto,
-        kind: null,
+        kind,
       })
 
       if (result.success && result.categoryId) {
@@ -220,7 +229,7 @@ export function TransactionSheet({
           id: result.categoryId,
           name: newCategoryName.trim(),
           empresaId: empresaIdContexto,
-          kind: null,
+          kind,
           userId: '',
           isDefault: false,
           createdAt: new Date(),

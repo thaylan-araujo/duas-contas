@@ -28,6 +28,8 @@ interface TransactionListProps {
   categories: Category[]
   currentMonth: string // "YYYY-MM"
   onNewTransaction?: () => void
+  // empresaId do contexto ativo (null = Casa) — propaga aos sheets de criação/edição.
+  empresaIdContexto?: string | null
 }
 
 export function TransactionList({
@@ -35,6 +37,7 @@ export function TransactionList({
   categories,
   currentMonth,
   onNewTransaction,
+  empresaIdContexto = null,
 }: TransactionListProps) {
   const [createSheetOpen, setCreateSheetOpen] = useState(false)
 
@@ -80,6 +83,7 @@ export function TransactionList({
           open={createSheetOpen}
           onClose={() => setCreateSheetOpen(false)}
           categories={categories}
+          empresaIdContexto={empresaIdContexto}
         />
       </>
     )
@@ -90,7 +94,12 @@ export function TransactionList({
       {/* Mobile: stacked card list */}
       <div className="lg:hidden bg-card rounded-2xl border border-border overflow-hidden">
         {transactions.map((t) => (
-          <TransactionRow key={t.id} transaction={t} categories={categories} />
+          <TransactionRow
+            key={t.id}
+            transaction={t}
+            categories={categories}
+            empresaIdContexto={empresaIdContexto}
+          />
         ))}
       </div>
 
@@ -124,7 +133,12 @@ export function TransactionList({
           </thead>
           <tbody>
             {transactions.map((t) => (
-              <TransactionRow key={t.id} transaction={t} categories={categories} />
+              <TransactionRow
+                key={t.id}
+                transaction={t}
+                categories={categories}
+                empresaIdContexto={empresaIdContexto}
+              />
             ))}
           </tbody>
         </table>
@@ -134,6 +148,7 @@ export function TransactionList({
         open={createSheetOpen}
         onClose={() => setCreateSheetOpen(false)}
         categories={categories}
+        empresaIdContexto={empresaIdContexto}
       />
     </>
   )

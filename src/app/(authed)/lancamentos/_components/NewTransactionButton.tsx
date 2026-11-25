@@ -9,9 +9,14 @@ import type { Category } from '@prisma/client'
 
 interface NewTransactionButtonProps {
   categories: Category[]
+  // empresaId do contexto ativo (null = Casa) — o novo lançamento nasce nele.
+  empresaIdContexto?: string | null
 }
 
-export function NewTransactionButton({ categories }: NewTransactionButtonProps) {
+export function NewTransactionButton({
+  categories,
+  empresaIdContexto = null,
+}: NewTransactionButtonProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -25,6 +30,7 @@ export function NewTransactionButton({ categories }: NewTransactionButtonProps) 
         open={open}
         onClose={() => setOpen(false)}
         categories={categories}
+        empresaIdContexto={empresaIdContexto}
       />
     </>
   )

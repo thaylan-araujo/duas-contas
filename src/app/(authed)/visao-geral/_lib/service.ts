@@ -47,9 +47,14 @@ export async function upsertMonthlyBudget(
 }
 
 /**
- * Returns the total amount spent (CASA SAIDA) in a given month.
+ * Returns the total amount spent (SAIDA) in a given month for the active context.
+ * empresaId: null = Casa (empresaId IS NULL) | string = empresa específica. (EMPF-06)
  */
-export async function getTotalSpent(userId: string, month: string): Promise<number> {
+export async function getTotalSpent(
+  userId: string,
+  month: string,
+  empresaId: string | null = null
+): Promise<number> {
   if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
   const [year, monthNum] = month.split('-').map(Number)
   const start = new Date(year, monthNum - 1, 1)
@@ -59,7 +64,7 @@ export async function getTotalSpent(userId: string, month: string): Promise<numb
     _sum: { amountCents: true },
     where: {
       userId,
-      empresaId: null, // Casa
+      empresaId, // null = Casa; id = empresa ativa
       type: 'SAIDA',
       date: { gte: start, lte: end },
     },
@@ -73,7 +78,8 @@ export async function getTotalSpent(userId: string, month: string): Promise<numb
  */
 export async function getCategorySpending(
   userId: string,
-  month: string
+  month: string,
+  empresaId: string | null = null
 ): Promise<Array<{ categoryId: string; name: string; totalCents: number }>> {
   if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
   const [year, monthNum] = month.split('-').map(Number)
@@ -84,7 +90,7 @@ export async function getCategorySpending(
     by: ['categoryId'],
     where: {
       userId,
-      empresaId: null, // Casa
+      empresaId, // null = Casa; id = empresa ativa
       type: 'SAIDA',
       date: { gte: start, lte: end },
     },
@@ -116,7 +122,8 @@ export async function getCategorySpending(
  */
 export async function getWeeklySpending(
   userId: string,
-  month: string
+  month: string,
+  empresaId: string | null = null
 ): Promise<Array<{ week: string; totalCents: number }>> {
   if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
   const [year, monthNum] = month.split('-').map(Number)
@@ -126,7 +133,7 @@ export async function getWeeklySpending(
   const transactions = await prisma.transaction.findMany({
     where: {
       userId,
-      empresaId: null, // Casa
+      empresaId, // null = Casa; id = empresa ativa
       type: 'SAIDA',
       date: { gte: start, lte: end },
     },
