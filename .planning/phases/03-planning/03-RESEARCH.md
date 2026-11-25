@@ -439,17 +439,17 @@ export async function getAutoGastei(userId: string, month: string, weekIndex: 0|
 | A4 | Seed das 2 metas via service `getOrCreate` no 1º acesso (não via `prisma/seed.ts`) | Architecture Pattern 2 | Baixo — `seed.ts` existe e roda no deploy; metas poderiam ir lá. Mas service no 1º acesso cobre usuários futuros sem re-seed. Planner decide |
 | A5 | "Copiar plano do mês anterior" copia apenas `PlanItem` persistidos (não as contas fixas derivadas) | Pattern 3 | Baixo — contas fixas já entram sozinhas em todo mês; copiá-las duplicaria |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Override do "Gastei" por semana×categoria ou por item?**
    - What we know: D-02 diz "persistir override manual (valor opcional)"; UI-SPEC mostra o campo por item dentro do cartão da semana.
    - What's unclear: se dois itens da mesma categoria caem na mesma semana, o "Gastei" automático (soma de Transactions por categoria) é por categoria, não por item — mas o campo é exibido por item.
-   - Recommendation: modelar o override por **(mês, semana, categoria)** e exibir no primeiro item daquela categoria na semana, ou agregar a linha da categoria no cartão. Planner deve resolver no desenho do cartão semanal; `WeeklySpend` com `@@unique([userId,month,weekIndex,categoryId])` suporta isso.
+   - RESOLVED: `WeeklySpend` com chave `(userId, month, weekIndex, categoryId)`; o editor de "Gastei" é renderizado no nível da categoria dentro da semana (não duplicado por item). Resolvido no Plano 03.
 
 2. **Arredondamento "guardar por mês" — confirmar com usuário?**
    - What we know: é só exibição (D-05: anual não vira meta).
    - What's unclear: expectativa do usuário sobre ±centavos.
-   - Recommendation: `Math.round`, documentar; não bloquear. (É um ASSUMED de baixo risco.)
+   - RESOLVED: `Math.round` para exibição (ASSUMED de baixo risco, documentado).
 
 ## Environment Availability
 
