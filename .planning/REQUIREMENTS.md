@@ -46,12 +46,12 @@
 
 Requisitos da Fatia 1 (fundação) do bloco multi-empresa. Ver `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md`.
 
-- [ ] **EMPF-01**: Entidade Empresa (nome, tipo, cor) e migração do modelo Casa/Empresa para Casa + empresaId, preservando os dados da Casa
-- [ ] **EMPF-02**: CRUD de empresa (criar/editar/remover) com proteção de exclusão quando houver lançamentos vinculados
-- [ ] **EMPF-03**: Categorias de receita/custo por empresa, com conjunto padrão semeado por tipo
-- [ ] **EMPF-04**: Seed re-executável das 3 empresas (Elite Juris, Achadinhos, Infoproduto)
-- [ ] **EMPF-05**: Seletor dropdown "Casa + empresas" no topo + contexto ativo generalizado (Casa | empresa)
-- [ ] **EMPF-06**: Lançamentos e visão geral passam a funcionar pela empresa selecionada
+- [x] **EMPF-01**: Entidade Empresa (nome, tipo, cor) e migração do modelo Casa/Empresa para Casa + empresaId, preservando os dados da Casa
+- [x] **EMPF-02**: CRUD de empresa (criar/editar/remover) com proteção de exclusão quando houver lançamentos vinculados
+- [x] **EMPF-03**: Categorias de receita/custo por empresa, com conjunto padrão semeado por tipo
+- [x] **EMPF-04**: Seed re-executável das 3 empresas (Elite Juris, Achadinhos, Infoproduto)
+- [x] **EMPF-05**: Seletor dropdown "Casa + empresas" no topo + contexto ativo generalizado (Casa | empresa)
+- [x] **EMPF-06**: Lançamentos e visão geral passam a funcionar pela empresa selecionada
 
 ### Canais e Fluxo de Caixa (Empresa)
 
@@ -153,12 +153,12 @@ Requisitos da Fatia 1 (fundação) do bloco multi-empresa. Ver `docs/superpowers
 | META-02 | Fase 3 | Entregue |
 | DASH-01 | Fase 2 | Pendente |
 | DASH-02 | Fase 2 | Pendente |
-| EMPF-01 | Fase 4 | Pendente |
-| EMPF-02 | Fase 4 | Pendente |
-| EMPF-03 | Fase 4 | Pendente |
-| EMPF-04 | Fase 4 | Pendente |
-| EMPF-05 | Fase 4 | Pendente |
-| EMPF-06 | Fase 4 | Pendente |
+| EMPF-01 | Fase 4 | Entregue |
+| EMPF-02 | Fase 4 | Entregue |
+| EMPF-03 | Fase 4 | Entregue |
+| EMPF-04 | Fase 4 | Entregue |
+| EMPF-05 | Fase 4 | Entregue |
+| EMPF-06 | Fase 4 | Entregue |
 | CHAN-01 | Fase 4 | Pendente |
 | CHAN-02 | Fase 4 | Pendente |
 | CHAN-03 | Fase 4 | Pendente |

@@ -126,19 +126,19 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Wave 0: checkpoint de backup + versão PG>=15, instalar DropdownMenu, testes RED das funções puras
+- [x] 04-01-PLAN.md — Wave 0: checkpoint de backup + versão PG>=15, instalar DropdownMenu, testes RED das funções puras
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02-PLAN.md — Migração ContaType→Empresa/empresaId (dados da Casa preservados, NULLS NOT DISTINCT) + store generalizado + refactor dos consumidores de account
+- [x] 04-02-PLAN.md — Migração ContaType→Empresa/empresaId (dados da Casa preservados, NULLS NOT DISTINCT) + store generalizado + refactor dos consumidores de account
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-03-PLAN.md — CRUD de empresa (/empresas): service/actions/loader + Sheet/ColorPicker/Dialog + categorias por empresa + seed das 3 empresas
+- [x] 04-03-PLAN.md — CRUD de empresa (/empresas): service/actions/loader + Sheet/ColorPicker/Dialog + categorias por empresa + seed das 3 empresas
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 04-04-PLAN.md — ContaSelector (dropdown Casa + empresas) global + lançamentos/visão geral por contexto + verificação ponta a ponta
+- [x] 04-04-PLAN.md — ContaSelector (dropdown Casa + empresas) global + lançamentos/visão geral por contexto + verificação ponta a ponta
 **UI hint**: yes
 
 ### Phase 5: Calendário e Alertas
