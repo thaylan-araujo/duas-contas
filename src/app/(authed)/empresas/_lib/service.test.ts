@@ -16,6 +16,8 @@ import {
   receitasPorTipo,
   canDeleteEmpresa,
   CUSTOS_PADRAO,
+  mensagemBloqueioExclusao,
+  buildSeedCategoriaEntries,
 } from './service'
 import { empresaSchema } from './schema'
 
@@ -142,5 +144,50 @@ describe('empresaSchema (D-03 — validação zod de nome/tipo/cor)', () => {
     for (const cor of ['laranja', 'verde', 'roxo', 'rosa', 'ambar', 'cinza-azulado']) {
       expect(empresaSchema.safeParse({ ...valido, cor }).success).toBe(true)
     }
+  })
+})
+
+describe('mensagemBloqueioExclusao (D-08 — pluralização pt-BR da mensagem)', () => {
+  it('count === 1 → "lançamento" (singular) e "vinculado"', () => {
+    expect(mensagemBloqueioExclusao(1)).toBe('A empresa tem 1 lançamento vinculado.')
+  })
+
+  it('count === 2 → "lançamentos" (plural) e "vinculados"', () => {
+    expect(mensagemBloqueioExclusao(2)).toBe('A empresa tem 2 lançamentos vinculados.')
+  })
+
+  it('count === 3 → plural', () => {
+    expect(mensagemBloqueioExclusao(3)).toBe('A empresa tem 3 lançamentos vinculados.')
+  })
+})
+
+describe('buildSeedCategoriaEntries (D-04/D-05 — chaves {name, empresaId, userId} sem duplicar)', () => {
+  const USER = 'user-1'
+  const EMP = 'emp-1'
+
+  it('produz exatamente uma entrada por item de categoriasPadrao(tipo)', () => {
+    const entries = buildSeedCategoriaEntries(USER, EMP, 'AFILIADO')
+    expect(entries.length).toBe(categoriasPadrao('AFILIADO').length)
+  })
+
+  it('cada entrada carrega empresaId e userId do contexto', () => {
+    const entries = buildSeedCategoriaEntries(USER, EMP, 'INFOPRODUTO')
+    for (const e of entries) {
+      expect(e.empresaId).toBe(EMP)
+      expect(e.userId).toBe(USER)
+    }
+  })
+
+  it('preserva name + kind de categoriasPadrao', () => {
+    const entries = buildSeedCategoriaEntries(USER, EMP, 'JURIDICO_SERVICOS')
+    const esperado = categoriasPadrao('JURIDICO_SERVICOS').map((c) => `${c.name}:${c.kind}`).sort()
+    const obtido = entries.map((e) => `${e.name}:${e.kind}`).sort()
+    expect(obtido).toEqual(esperado)
+  })
+
+  it('as chaves compostas (name+empresaId+userId) são únicas (não duplica)', () => {
+    const entries = buildSeedCategoriaEntries(USER, EMP, 'GENERICO')
+    const chaves = entries.map((e) => `${e.name}|${e.empresaId}|${e.userId}`)
+    expect(new Set(chaves).size).toBe(chaves.length)
   })
 })

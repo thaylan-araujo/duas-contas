@@ -134,10 +134,21 @@ export async function deleteProLaboreService(pairId: string, userId: string) {
 /**
  * Creates a new custom category for the user.
  * T-02-13: userId is always set, so categories are user-scoped.
+ * T-04-06 (IDOR): when empresaId is provided, verifies the empresa belongs to
+ * the user BEFORE writing — a cliente nunca pode criar categoria numa empresa
+ * de outro usuário.
  */
 export async function createCategoryService(
   data: CategoryCreateData & { userId: string }
 ) {
+  if (data.empresaId !== null && data.empresaId !== undefined) {
+    const empresa = await prisma.empresa.findFirst({
+      where: { id: data.empresaId, userId: data.userId },
+    })
+    if (!empresa) {
+      throw new Error('Empresa não encontrada.')
+    }
+  }
   return prisma.category.create({
     data: {
       name: data.name,
