@@ -12,7 +12,7 @@
 - [ ] **Phase 1: Foundation** - Infraestrutura, autenticação e utilitários críticos antes de qualquer feature
 - [x] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa (completed 2026-11-24)
 - [x] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas (completed 2026-11-25)
-- [ ] **Phase 3.5: Casa — Acompanhamento (rework)** - substitui o planejamento semanal manual por barra "dinheiro do mês" + tetos por categoria + gasto semanal automático; remove PlanItem/WeeklySpend (ver docs/superpowers/specs/2026-11-25-casa-acompanhamento-design.md)
+- [x] **Phase 3.5: Casa — Acompanhamento (rework)** - substitui o planejamento semanal manual por barra "dinheiro do mês" + tetos por categoria + gasto semanal automático; remove PlanItem/WeeklySpend (ver docs/superpowers/specs/2026-11-25-casa-acompanhamento-design.md)
 - [ ] **Phase 4: Empresas (multi) e Renda Familiar** - Casa + N empresas independentes (P&L por empresa), pró-labore de cada → renda familiar, consolidado + projeção, dívidas e DAS por empresa (ver docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md)
 - [ ] **Phase 5: Calendário e Alertas** - Calendário de vencimentos com notificações push
 - [ ] **Phase 6: Relatório Mensal** - Relatório completo e exportação em PDF
@@ -126,15 +126,15 @@ Plans:
 Plans:
 **Wave 0**
 
-- [ ] 03b-01-PLAN.md — Backup (checkpoint bloqueante) + migração destrutiva: remove PlanItem/WeeklySpend, cria CategoryBudget
+- [x] 03b-01-PLAN.md — Backup (checkpoint bloqueante) + migração destrutiva: remove PlanItem/WeeklySpend, cria CategoryBudget
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
-- [ ] 03b-02-PLAN.md — Núcleo do acompanhamento: funções puras testadas + service/loader/actions/schema + tela /planejamento (barra do mês, tetos por categoria, semanal automático) + remoção dos componentes do plano manual
+- [x] 03b-02-PLAN.md — Núcleo do acompanhamento: funções puras testadas + service/loader/actions/schema + tela /planejamento (barra do mês, tetos por categoria, semanal automático) + remoção dos componentes do plano manual
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03b-03-PLAN.md — Dashboard da Casa (Dinheiro do mês / Restante do mês / Gasto até hoje) + verificação ponta a ponta
+- [x] 03b-03-PLAN.md — Dashboard da Casa (Dinheiro do mês / Restante do mês / Gasto até hoje) + verificação ponta a ponta
 
 **UI hint**: yes
 

@@ -42,6 +42,14 @@
 - [x] **DASH-01**: Usuário vê painel da Casa com cartões: teto do mês, total planejado, folga e gasto até hoje
 - [x] **DASH-02**: Usuário vê barras de distribuição por categoria e gráfico de gastos semana a semana
 
+### Casa — Acompanhamento (rework, Fase 3.5 — entregue 25/11/2026)
+
+- [x] **CASA-R-01**: Dinheiro do mês = soma automática das entradas da Casa no mês
+- [x] **CASA-R-02**: Teto mensal opcional por categoria (referência, não bloqueia)
+- [x] **CASA-R-03**: Gasto semanal por categoria calculado automaticamente dos lançamentos
+- [x] **CASA-R-04**: Removidos PlanItem/WeeklySpend e o planejamento semanal manual
+- [x] **CASA-R-05**: Dashboard mostra Dinheiro do mês / Restante do mês / Gasto até hoje
+
 ### Fundação Multi-Empresa (Fase 4 — formalizado 25/11/2026)
 
 Requisitos da Fatia 1 (fundação) do bloco multi-empresa. Ver `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md`.
