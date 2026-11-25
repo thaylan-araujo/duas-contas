@@ -27,17 +27,16 @@ enum TransactionType {
 }
 
 model User {
-  id              String          @id
+  id              String           @id
   categories      Category[]
   transactions    Transaction[]
   empresas        Empresa[]
   monthlyBudgets  MonthlyBudget[]
-  planItems       PlanItem[]
-  weeklySpends    WeeklySpend[]
+  categoryBudgets CategoryBudget[]
   fixedAccounts   FixedAccount[]
   annualExpenses  AnnualExpense[]
   goals           Goal[]
-  createdAt       DateTime        @default(now())
+  createdAt       DateTime         @default(now())
 }
 
 // Empresa (D-02/D-03/D-07). Cada empresa tem suas próprias categorias e
@@ -51,7 +50,7 @@ model Empresa {
   userId       String
   nome         String
   tipo         EmpresaTipo
-  cor          String        // chave da paleta fixa (UI-SPEC §Color)
+  cor          String // chave da paleta fixa (UI-SPEC §Color)
   categories   Category[]
   transactions Transaction[]
   createdAt    DateTime      @default(now())
@@ -60,17 +59,17 @@ model Empresa {
 }
 
 model Category {
-  id           String        @id @default(cuid())
-  name         String
-  empresa      Empresa?      @relation(fields: [empresaId], references: [id], onDelete: Restrict)
-  empresaId    String?       // null = Casa
-  kind         CategoryKind? // null para Casa; RECEITA/CUSTO para empresa
-  user         User          @relation(fields: [userId], references: [id])
-  userId       String
-  transactions Transaction[]
-  planItems    PlanItem[]
-  isDefault    Boolean       @default(false)
-  createdAt    DateTime      @default(now())
+  id              String           @id @default(cuid())
+  name            String
+  empresa         Empresa?         @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  empresaId       String? // null = Casa
+  kind            CategoryKind? // null para Casa; RECEITA/CUSTO para empresa
+  user            User             @relation(fields: [userId], references: [id])
+  userId          String
+  transactions    Transaction[]
+  categoryBudgets CategoryBudget[]
+  isDefault       Boolean          @default(false)
+  createdAt       DateTime         @default(now())
 
   // NOTA: o @@unique abaixo NÃO cobre a Casa (empresaId null) sozinho — o índice
   // real é criado com NULLS NOT DISTINCT no SQL hand-editado (04-RESEARCH Pitfall 1).
@@ -86,7 +85,7 @@ model Transaction {
   category    Category        @relation(fields: [categoryId], references: [id])
   categoryId  String
   empresa     Empresa?        @relation(fields: [empresaId], references: [id], onDelete: Restrict)
-  empresaId   String?         // null = Casa
+  empresaId   String? // null = Casa
   user        User            @relation(fields: [userId], references: [id])
   userId      String
   origin      String          @default("manual")
@@ -108,43 +107,22 @@ model MonthlyBudget {
   @@unique([userId, month])
 }
 
-// Item do plano mensal da Casa (D-01/D-03).
-// "Grupo" reaproveita a Categoria da Casa existente (D-03) para casar com os
-// lançamentos reais no cálculo automático do "Gastei". As 4 semanas são
-// explícitas (D-01): total do item = valuePerCents × nº de semanas marcadas.
-model PlanItem {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  month         String   // 'YYYY-MM'
-  name          String
-  category      Category @relation(fields: [categoryId], references: [id])
-  categoryId    String
-  valuePerCents Int // valor por vez, em centavos
-  week1         Boolean  @default(false)
-  week2         Boolean  @default(false)
-  week3         Boolean  @default(false)
-  week4         Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+// Teto mensal OPCIONAL por categoria da Casa (D-03/CASA-R-02). Guardado por
+// (userId, mês, categoria): uma categoria tem no máximo um teto por mês.
+// A ausência de linha significa "sem teto" (mostra só o gasto). É referência,
+// nunca bloqueia lançamento.
+model CategoryBudget {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  month      String // 'YYYY-MM'
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  limitCents Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  @@index([userId, month])
-}
-
-// Override manual do "Gastei R$" por semana × categoria (D-02, Pitfall 4).
-// Uma linha existe → override manual; nenhuma linha → usa a soma automática.
-model WeeklySpend {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  month       String // 'YYYY-MM'
-  weekIndex   Int // 0..3
-  categoryId  String
-  manualCents Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([userId, month, weekIndex, categoryId])
+  @@unique([userId, month, categoryId])
 }
 
 // Conta fixa (FIXA-01). Entra automaticamente no plano do mês no grupo
