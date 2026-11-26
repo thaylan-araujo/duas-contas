@@ -50,6 +50,14 @@
 - [x] **CASA-R-04**: Removidos PlanItem/WeeklySpend e o planejamento semanal manual
 - [x] **CASA-R-05**: Dashboard mostra Dinheiro do mês / Restante do mês / Gasto até hoje
 
+### P&L por empresa (Fase 4 · Fatia 2 — entregue 26/11/2026)
+
+- [x] **PNL-01**: Tela /canais mostra o P&L da empresa ativa por mês
+- [x] **PNL-02**: Faturamento bruto = soma das receitas da empresa no mês
+- [x] **PNL-03**: Faturamento líquido = bruto − impostos
+- [x] **PNL-04**: Lucro = receitas − todos os custos
+- [x] **PNL-05**: Receitas e custos por categoria (derivados dos lançamentos)
+
 ### Fundação Multi-Empresa (Fase 4 — formalizado 25/11/2026)
 
 Requisitos da Fatia 1 (fundação) do bloco multi-empresa. Ver `docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md`.
