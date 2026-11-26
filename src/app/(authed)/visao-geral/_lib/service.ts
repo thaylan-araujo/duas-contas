@@ -100,6 +100,42 @@ export async function getTotalEntradas(
 }
 
 /**
+ * Agrega as ENTRADAS da Casa do mês por empresa de ORIGEM (PL-05/D-04).
+ *
+ * É Casa-only: `empresaId` é SEMPRE null aqui (a renda familiar é da Casa). O
+ * agrupamento é pelo `origemEmpresaId` — a empresa DE ONDE o dinheiro veio
+ * (preenchido pelo pró-labore em 04c-02); `origemEmpresaId` null = entrada sem
+ * origem (ex.: salário → "Outras entradas"). Sempre filtra por userId
+ * (T-04c-08 — nunca query sem escopo). A soma dos `totalCents` resultantes é
+ * igual a getTotalEntradas (Casa) — mesma janela de mês.
+ */
+export async function getRendaPorOrigem(
+  userId: string,
+  month: string
+): Promise<Array<{ origemEmpresaId: string | null; totalCents: number }>> {
+  if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
+  const [year, monthNum] = month.split('-').map(Number)
+  const start = new Date(year, monthNum - 1, 1)
+  const end = new Date(year, monthNum, 0, 23, 59, 59, 999)
+
+  const grouped = await prisma.transaction.groupBy({
+    by: ['origemEmpresaId'],
+    where: {
+      userId,
+      empresaId: null, // Casa: a renda familiar é SEMPRE da Casa
+      type: 'ENTRADA',
+      date: { gte: start, lte: end },
+    },
+    _sum: { amountCents: true },
+  })
+
+  return grouped.map((g) => ({
+    origemEmpresaId: g.origemEmpresaId,
+    totalCents: g._sum.amountCents ?? 0,
+  }))
+}
+
+/**
  * Returns spending per category for CASA SAIDA transactions in a month,
  * sorted descending by total (highest spend first).
  */
