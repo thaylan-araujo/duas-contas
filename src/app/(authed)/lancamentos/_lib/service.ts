@@ -86,33 +86,126 @@ export async function deleteTransactionService(id: string, userId: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Pró-labore services (LANC-05)
+// Pró-labore services (LANC-05 / 04c-02 — par atômico multi-empresa)
 // ---------------------------------------------------------------------------
 
-/**
- * Mensagem de deferimento do pró-labore multi-origem (Open Question 3 / 04-RESEARCH).
- * O pró-labore mapeava SAIDA na Empresa → ENTRADA na Casa usando o antigo enum
- * `account`. Com o eixo empresaId (null = Casa), a mecânica correta precisa saber
- * DE QUAL empresa sai o pró-labore, e isso depende da seleção de contexto que só
- * chega numa fatia futura. Deixar ambos os lados com empresaId:null registraria
- * a transferência como um lançamento comum da Casa (semântica errada) — por isso
- * o fluxo é DESABILITADO nesta fatia em vez de neutralizado silenciosamente.
- */
-export const PRO_LABORE_DEFERRED_MESSAGE =
-  'O pró-labore multi-empresa chega em uma próxima fatia.'
+const PRO_LABORE_CATEGORIA = 'Pró-labore'
 
 /**
- * DESABILITADO nesta fatia (04-02). A criação de pró-labore está deferida: a
- * transferência Empresa → Casa precisa da origem (empresaId da empresa) que ainda
- * não é selecionável. Lança um erro claro em vez de gravar empresaId:null nos dois
- * lados (que mascararia a transferência como lançamento comum da Casa).
- * A assinatura é mantida para compatibilidade de chamada; o fluxo real retorna
- * na fatia de pró-labore multi-origem (deferred em 04-CONTEXT).
+ * Garante (getOrCreate, idempotente) a categoria "Pró-labore" para um escopo
+ * (empresa `empresaId` ou Casa quando `empresaId` é null), com o `kind` dado.
+ * Mesmo padrão idempotente de getOrSeedCategorias (upsert na chave composta
+ * name_empresaId_userId). Para a Casa (empresaId null) o upsert do Prisma pode
+ * recusar a chave composta com null (04-02 Pitfall #2) — nesse caso fazemos
+ * findFirst + create como fallback, apoiados no índice NULLS NOT DISTINCT do SQL.
+ */
+async function getOrCreateProLaboreCategoria(
+  userId: string,
+  empresaId: string | null,
+  kind: 'CUSTO' | null
+): Promise<{ id: string }> {
+  if (empresaId !== null) {
+    return prisma.category.upsert({
+      where: {
+        name_empresaId_userId: {
+          name: PRO_LABORE_CATEGORIA,
+          empresaId,
+          userId,
+        },
+      },
+      update: {}, // já existe → não duplica, não sobrescreve
+      create: {
+        name: PRO_LABORE_CATEGORIA,
+        empresaId,
+        userId,
+        kind,
+        isDefault: true,
+      },
+    })
+  }
+
+  // Casa (empresaId null): findFirst + create (fallback do pitfall de null na
+  // chave composta do Prisma). O índice NULLS NOT DISTINCT do banco evita duplicata.
+  const existing = await prisma.category.findFirst({
+    where: { name: PRO_LABORE_CATEGORIA, empresaId: null, userId },
+  })
+  if (existing) return existing
+  return prisma.category.create({
+    data: {
+      name: PRO_LABORE_CATEGORIA,
+      empresaId: null,
+      userId,
+      kind,
+      isDefault: true,
+    },
+  })
+}
+
+/**
+ * Cria atomicamente o par de pró-labore multi-empresa (PL-01/PL-02/PL-03/PL-04):
+ * 1. IDOR (ASVS V4): a empresa de origem DEVE pertencer ao userId — senão erro, nada gravado.
+ * 2. getOrCreate da categoria "Pró-labore" na empresa (CUSTO) e na Casa (kind null).
+ * 3. Numa única prisma.$transaction, cria a SAÍDA na empresa (empresaId = origem,
+ *    origemEmpresaId = origem, categoria da empresa) e a ENTRADA na Casa (empresaId
+ *    null, origemEmpresaId = origem, categoria da Casa), ambas com o MESMO pairId.
+ * A SAÍDA conta como custo → reduz o lucro da empresa (PL-03); a ENTRADA soma no
+ * Dinheiro do mês da Casa (PL-04). A edição/exclusão individual fica bloqueada pelo
+ * guard pairId; a exclusão do par é atômica (deleteProLaboreService).
  */
 export async function createProLaboreService(
-  _input: ProLaboreFormData & { userId: string }
-): Promise<never> {
-  throw new Error(PRO_LABORE_DEFERRED_MESSAGE)
+  input: ProLaboreFormData & { userId: string }
+) {
+  const { userId, origemEmpresaId, amountCents, date } = input
+
+  // 1. IDOR: a empresa de origem deve pertencer ao usuário.
+  const empresa = await prisma.empresa.findFirst({
+    where: { id: origemEmpresaId, userId },
+  })
+  if (!empresa) {
+    throw new Error('Empresa não encontrada.')
+  }
+
+  // 2. Categoria "Pró-labore" garantida na empresa (CUSTO) e na Casa (null kind).
+  const categoriaEmpresa = await getOrCreateProLaboreCategoria(
+    userId,
+    origemEmpresaId,
+    'CUSTO'
+  )
+  const categoriaCasa = await getOrCreateProLaboreCategoria(userId, null, null)
+
+  // 3. Par atômico: SAÍDA empresa + ENTRADA Casa, mesmo pairId.
+  const pairId = crypto.randomUUID()
+  const parsedDate = parseISO(date)
+
+  return prisma.$transaction(async (tx) => {
+    const saida = await tx.transaction.create({
+      data: {
+        type: 'SAIDA',
+        description: PRO_LABORE_CATEGORIA,
+        amountCents,
+        date: parsedDate,
+        empresaId: origemEmpresaId,
+        origemEmpresaId,
+        categoryId: categoriaEmpresa.id,
+        userId,
+        pairId,
+      },
+    })
+    const entrada = await tx.transaction.create({
+      data: {
+        type: 'ENTRADA',
+        description: PRO_LABORE_CATEGORIA,
+        amountCents,
+        date: parsedDate,
+        empresaId: null, // Casa
+        origemEmpresaId,
+        categoryId: categoriaCasa.id,
+        userId,
+        pairId,
+      },
+    })
+    return { saida, entrada }
+  })
 }
 
 /**

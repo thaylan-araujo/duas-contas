@@ -132,8 +132,12 @@ export async function createProLaboreAction(
     await createProLaboreService({ ...parsed.data, userId })
     revalidatePath('/lancamentos')
     revalidatePath('/visao-geral')
+    revalidatePath('/canais') // o pró-labore é custo → afeta o P&L da empresa
     return { success: true }
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.message === 'Empresa não encontrada.') {
+      return { success: false, error: err.message }
+    }
     return {
       success: false,
       error: 'Não foi possível registrar o pró-labore. Verifique sua conexão e tente novamente.',

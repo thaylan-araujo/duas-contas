@@ -20,12 +20,14 @@ export const updateTransactionSchema = transactionSchema.extend({
 
 export type UpdateTransactionFormData = z.infer<typeof updateTransactionSchema>
 
-// --- Pró-labore schema (LANC-05) ---
-
+// --- Pró-labore schema (LANC-05 / 04c-02) ---
+// O pró-labore sempre sai de uma empresa específica (a origem) para a Casa.
+// A categoria "Pró-labore" é resolvida pelo service via getOrCreate (não é mais
+// escolhida no form — PL-02), por isso `categoryId` saiu do schema.
 export const proLaboreSchema = z.object({
   date: z.string().min(1, 'Data obrigatória'),
   amountCents: z.number().int().positive('Valor deve ser maior que zero.'),
-  categoryId: z.string().min(1, 'Categoria obrigatória'),
+  origemEmpresaId: z.string().min(1, 'Selecione a empresa de origem.'),
 })
 
 export type ProLaboreFormData = z.infer<typeof proLaboreSchema>
