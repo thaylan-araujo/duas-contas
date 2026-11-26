@@ -514,17 +514,17 @@ Adicionar relação inversa `whatsappContacts WhatsappContact[]` em `User`.
 | A5 | `@anthropic-ai/sdk` é legítimo apesar do verdict SUS | Package Legitimacy | Baixo — 73M downloads + repo oficial; SUS é falso positivo (too-new do mirror) |
 | A6 | Modo `@lid`/`remoteJidAlt` aparece na instância do Thaylan | Pitfall 1 | Baixo — tratar ambos os caminhos é defensivo e barato |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Segredo do webhook: query string ou header?**
+1. **Segredo do webhook: query string ou header?** — RESOLVED: `verifyWebhookSecret` (09-02 Task 1) implementa **ambos** os mecanismos (header `x-webhook-secret` OU query `?secret=`), comparados com `timingSafeEqual`; o setup escolhe qual usar na URL do set-webhook.
    - Sabemos: Evolution não assina HMAC por padrão; `set-webhook` aceita `headers` custom e aceita query na URL.
    - Incerto: qual a instância do Thaylan repassa de forma confiável.
    - Recomendação: implementar `verifyWebhookSecret` que aceita **ambos** (header `x-webhook-secret` OU query `?secret=`) e comparar com `timingSafeEqual`; decidir no setup.
 
-2. **Versão exata da Evolution (v1 vs v2) → body do sendText.**
+2. **Versão exata da Evolution (v1 vs v2) → body do sendText.** — RESOLVED: confirmado pelo checkpoint de setup externo (09-03 Task 3) via um curl de teste contra a instância real; o body fica centralizado em `evolution.ts` (default v2 `{number,text}`, troca para v1 `{number,textMessage:{text}}` no único ponto se a instância responder 400).
    - Recomendação: um `checkpoint:human-verify` com um curl de teste contra a instância real antes de fixar `evolution.ts`.
 
-3. **Timeout real do LLM vs tempo da função Vercel.**
+3. **Timeout real do LLM vs tempo da função Vercel.** — RESOLVED (deferred): processamento inline aceito para o volume baixo (uso pessoal); medir latência p95 depois e migrar para fila só se exceder (fora do escopo desta fatia).
    - Sabemos: Haiku é rápido; volume é baixo; default de função serverless na Vercel costuma ser suficiente.
    - Recomendação: processar inline; medir latência p95; se exceder, migrar passo 5–8 para fila (fora do escopo, nota pra Fatia futura).
 
