@@ -52,6 +52,11 @@ export default async function EmpresasPage() {
                 nome: empresa.nome,
                 tipo: empresa.tipo,
                 cor: empresa.cor,
+                // Decimal? do Prisma → number | null para o form (D-03).
+                aliquotaDasPercent:
+                  empresa.aliquotaDasPercent != null
+                    ? Number(empresa.aliquotaDasPercent)
+                    : null,
                 lancamentoCount: empresa.lancamentoCount,
               }}
               categoriasSlot={

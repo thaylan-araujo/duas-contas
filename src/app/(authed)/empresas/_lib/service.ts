@@ -132,6 +132,7 @@ export async function createEmpresaService(data: {
   nome: string
   tipo: EmpresaTipo
   cor: string
+  aliquotaDasPercent?: number | null
   userId: string
 }) {
   const empresa = await prisma.empresa.create({
@@ -139,6 +140,9 @@ export async function createEmpresaService(data: {
       nome: data.nome,
       tipo: data.tipo,
       cor: data.cor,
+      // Decimal? no banco — Prisma aceita number | null (D-03). undefined = não
+      // informado → fica null (default do schema). Null = "sem alíquota".
+      aliquotaDasPercent: data.aliquotaDasPercent ?? null,
       userId: data.userId,
     },
   })
@@ -153,13 +157,22 @@ export async function createEmpresaService(data: {
 export async function updateEmpresaService(
   id: string,
   userId: string,
-  data: { nome: string; tipo: EmpresaTipo; cor: string }
+  data: { nome: string; tipo: EmpresaTipo; cor: string; aliquotaDasPercent?: number | null }
 ) {
   const record = await prisma.empresa.findFirst({ where: { id, userId } })
   if (!record) throw new Error('Empresa não encontrada.')
   return prisma.empresa.update({
     where: { id },
-    data: { nome: data.nome, tipo: data.tipo, cor: data.cor },
+    data: {
+      nome: data.nome,
+      tipo: data.tipo,
+      cor: data.cor,
+      // Decimal? — number | null (D-03). undefined no payload → mantém o valor
+      // atual; null → limpa a alíquota.
+      ...(data.aliquotaDasPercent !== undefined && {
+        aliquotaDasPercent: data.aliquotaDasPercent,
+      }),
+    },
   })
 }
 

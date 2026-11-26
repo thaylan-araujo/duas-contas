@@ -20,6 +20,17 @@ export const EMPRESA_CORES = [
   'cinza-azulado',
 ] as const
 
+// Alíquota do DAS (%) opcional por empresa (D-03). Campo Decimal? no banco.
+// Tipo de ENTRADA = SAÍDA = `number | null` (sem z.preprocess/.default() — ambos
+// tornariam a entrada `unknown`/opcional e quebrariam a inferência do zodResolver
+// no useForm, como na nota do campo `cor` abaixo). A normalização de string vazia
+// do input HTML → null é feita no form via `setValueAs`; aqui só validamos 0–100.
+const aliquotaDasPercentSchema = z
+  .number({ message: 'Alíquota deve estar entre 0 e 100.' })
+  .min(0, 'Alíquota deve estar entre 0 e 100.')
+  .max(100, 'Alíquota deve estar entre 0 e 100.')
+  .nullable()
+
 export const empresaSchema = z.object({
   nome: z
     .string()
@@ -30,6 +41,7 @@ export const empresaSchema = z.object({
   // .default() tornaria o tipo de ENTRADA do zod opcional (cor?) enquanto a
   // SAÍDA é obrigatória, quebrando a inferência do zodResolver no useForm.
   cor: z.enum(EMPRESA_CORES, { message: 'Selecione uma cor.' }),
+  aliquotaDasPercent: aliquotaDasPercentSchema,
 })
 
 export type EmpresaFormData = z.infer<typeof empresaSchema>

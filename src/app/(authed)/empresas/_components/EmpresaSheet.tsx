@@ -33,6 +33,8 @@ export interface ExistingEmpresa {
   nome: string
   tipo: EmpresaFormData['tipo']
   cor: string
+  /** Alíquota do DAS (%) — null quando ainda não definida (D-03). */
+  aliquotaDasPercent?: number | null
 }
 
 interface EmpresaSheetProps {
@@ -54,7 +56,7 @@ export function EmpresaSheet({ open, onClose, empresa }: EmpresaSheetProps) {
     setError,
   } = useForm<EmpresaFormData>({
     resolver: zodResolver(empresaSchema),
-    defaultValues: { nome: '', tipo: 'GENERICO', cor: 'laranja' },
+    defaultValues: { nome: '', tipo: 'GENERICO', cor: 'laranja', aliquotaDasPercent: null },
   })
 
   useEffect(() => {
@@ -64,9 +66,10 @@ export function EmpresaSheet({ open, onClose, empresa }: EmpresaSheetProps) {
           nome: empresa.nome,
           tipo: empresa.tipo,
           cor: empresa.cor as EmpresaFormData['cor'],
+          aliquotaDasPercent: empresa.aliquotaDasPercent ?? null,
         })
       } else {
-        reset({ nome: '', tipo: 'GENERICO', cor: 'laranja' })
+        reset({ nome: '', tipo: 'GENERICO', cor: 'laranja', aliquotaDasPercent: null })
       }
     }
   }, [open, empresa, reset])
@@ -155,6 +158,37 @@ export function EmpresaSheet({ open, onClose, empresa }: EmpresaSheetProps) {
         />
         {errors.cor && (
           <p className="text-sm text-destructive" role="alert">{errors.cor.message}</p>
+        )}
+      </div>
+
+      {/* Alíquota do DAS (%) — opcional (D-03). Em branco → "sem alíquota". */}
+      <div className="space-y-1.5">
+        <Label htmlFor="emp-aliquota" className="text-sm font-medium text-text-primary">
+          Alíquota do DAS (%)
+        </Label>
+        <Input
+          id="emp-aliquota"
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          min={0}
+          max={100}
+          placeholder="Ex.: 6,00 — deixe em branco se ainda não definida"
+          className="min-h-[44px]"
+          {...register('aliquotaDasPercent', {
+            // String vazia → null (sem alíquota); senão número. O zod também
+            // normaliza (z.preprocess), mas convertemos aqui para o estado do form.
+            setValueAs: (v) =>
+              v === '' || v === null || v === undefined ? null : Number(v),
+          })}
+        />
+        <p className="text-sm text-text-secondary">
+          Usada para estimar o DAS do mês no P&amp;L. Deixe em branco se ainda não souber.
+        </p>
+        {errors.aliquotaDasPercent && (
+          <p className="text-sm text-destructive" role="alert">
+            {errors.aliquotaDasPercent.message}
+          </p>
         )}
       </div>
 
