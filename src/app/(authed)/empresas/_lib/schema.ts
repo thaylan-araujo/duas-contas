@@ -30,6 +30,9 @@ const aliquotaDasPercentSchema = z
   .min(0, 'Alíquota deve estar entre 0 e 100.')
   .max(100, 'Alíquota deve estar entre 0 e 100.')
   .nullable()
+  // Opcional: a chave pode ser omitida (ex.: objetos legados {nome,tipo,cor}).
+  // Omissa ou null → "sem alíquota" (D-03).
+  .optional()
 
 export const empresaSchema = z.object({
   nome: z
