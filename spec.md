@@ -151,7 +151,7 @@ São 9 telas. Um menu lateral fixo agrupa as telas em Visão geral, Casa, Empres
 - **Saldo final do mês** (fluxo de caixa) = saldo inicial + entradas previstas − todas as saídas previstas. O saldo final vira o saldo inicial do mês seguinte.
 - **Guardar por mês para um gasto anual** = valor no ano ÷ 12.
 - **Guardar por mês para uma meta** = (meta − guardado) ÷ meses até o prazo.
-- **Pró-labore** sai da Empresa como saída e entra na Casa como entrada, em uma única operação de transferência. Não conta como gasto nem como faturamento.
+- **Pró-labore** sai da Empresa como saída e entra na Casa como entrada, em uma única operação de transferência (ligadas por par). **Atualizado 26/11/2026:** no lado da empresa, o pró-labore é uma saída na categoria "Pró-labore" que **conta como custo e reduz o lucro** (decisão do usuário); no lado da Casa, é entrada que soma no "Dinheiro do mês" (renda familiar), com a origem (empresa) rastreável.
 
 ### Entidades (modelo de dados)
 
