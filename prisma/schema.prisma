@@ -52,7 +52,12 @@ model Empresa {
   tipo         EmpresaTipo
   cor          String // chave da paleta fixa (UI-SPEC §Color)
   categories   Category[]
-  transactions Transaction[]
+  // Relação de CONTA: lançamentos que PERTENCEM a esta empresa (empresaId).
+  transactions Transaction[] @relation("ContaEmpresa")
+  // Lado inverso da relação "OrigemEmpresa": lançamentos de pró-labore cuja
+  // empresa DE ONDE o dinheiro saiu é esta empresa (04c-01/D-04). Distinto de
+  // `transactions` acima (a conta à qual o lançamento pertence).
+  transacoesOrigem Transaction[] @relation("OrigemEmpresa")
   createdAt    DateTime      @default(now())
 
   @@unique([nome, userId])
@@ -84,8 +89,15 @@ model Transaction {
   type        TransactionType
   category    Category        @relation(fields: [categoryId], references: [id])
   categoryId  String
-  empresa     Empresa?        @relation(fields: [empresaId], references: [id], onDelete: Restrict)
+  // Relação de CONTA: a empresa à qual o lançamento pertence (null = Casa).
+  empresa     Empresa?        @relation("ContaEmpresa", fields: [empresaId], references: [id], onDelete: Restrict)
   empresaId   String? // null = Casa
+  // Empresa DE ONDE o pró-labore saiu (04c-01/D-04). Marca a ORIGEM tanto na
+  // SAÍDA da empresa quanto na ENTRADA da Casa, permitindo agrupar a renda
+  // familiar por origem com um groupBy direto (04c-03). NULL para lançamentos
+  // comuns que não são pró-labore marcado (ex.: "outras entradas" como salário).
+  origemEmpresa   Empresa? @relation("OrigemEmpresa", fields: [origemEmpresaId], references: [id], onDelete: Restrict)
+  origemEmpresaId String? // null = não é pró-labore marcado
   user        User            @relation(fields: [userId], references: [id])
   userId      String
   origin      String          @default("manual")
@@ -93,6 +105,8 @@ model Transaction {
   notes       String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  @@index([origemEmpresaId])
 }
 
 model MonthlyBudget {
