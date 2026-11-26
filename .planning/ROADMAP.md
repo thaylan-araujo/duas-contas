@@ -198,6 +198,26 @@ Plans:
 
 - [x] 04c-03-PLAN.md — Bloco "Renda familiar por origem" na Visão Geral da Casa: função pura testada (agrupamento por origem) + service/loader + componente + render no contexto Casa + verificação ponta a ponta
 
+#### Fatia 4 — Consolidado + Projeção
+
+**Plans:** 4 plans (DAS estimado por empresa + tela Consolidado + projeção simples com alerta de mês negativo; migração aditiva de 1 campo `Empresa.aliquotaDasPercent`)
+Plans:
+**Wave 0**
+
+- [ ] 04d-01-PLAN.md — Checkpoint de backup + migração aditiva `Empresa.aliquotaDasPercent` (alíquota do DAS por empresa, nullable) [CONS-02]
+
+**Wave 1** *(blocked on Wave 0 completion)*
+
+- [ ] 04d-02-PLAN.md — DAS estimado por empresa (fatia vertical): função pura `computeDasEstimado` + Vitest + alíquota editável no CRUD de empresa + card "DAS estimado" no P&L (/canais) [CONS-02]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04d-03-PLAN.md — Tela "Consolidado" (fatia vertical): funções puras de agregação + Vitest + loader reusando P&L/DAS por empresa + tabela por empresa + totais + item de menu context 'empresa' [CONS-01]
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 04d-04-PLAN.md — Projeção simples + alerta de saldo negativo (fatia vertical): funções puras de média/projeção/mês negativo + Vitest + loader da série histórica + tabela de projeção por mês com destaque de negativo e rótulo de estimativa [CONS-03, CONS-04]
+
 ### Phase 5: Calendário e Alertas
 
 **Goal**: Usuário vê todos os vencimentos de Casa e Empresa em um calendário mensal e recebe notificações push do navegador 3 dias antes e no dia de cada vencimento
