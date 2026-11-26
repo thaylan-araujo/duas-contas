@@ -7,17 +7,46 @@
 // devolve { linhas, totais }. É uma VISÃO derivada — nenhum modelo/migração novo.
 // Toda query filtra por userId (ASVS V4 / T-04d-06); o consolidado só inclui as
 // empresas do próprio usuário — nenhuma mistura entre usuários nem entre donos.
+import { subMonths, parse, format } from 'date-fns'
 import { prisma } from '@/lib/prisma'
 import { getEmpresas } from '@/app/(authed)/empresas/_lib/loader'
 import { loadPnlData } from '@/app/(authed)/canais/_lib/loader'
+import {
+  getTotalEntradas,
+  getTotalSpent,
+} from '@/app/(authed)/visao-geral/_lib/service'
+import { getFixedAccounts } from '@/app/(authed)/contas-fixas/_lib/service'
+import { computeDasEstimado } from '@/app/(authed)/canais/_lib/das'
 import {
   ordenarLinhas,
   somarConsolidado,
   type LinhaConsolidado,
   type TotaisConsolidado,
 } from './consolidado'
+import {
+  mediaUltimosMeses,
+  projetarMeses,
+  type MesProjetado,
+} from './projecao'
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/
+
+/** Janela histórica (em meses) usada para estimar a média (Discrição do Claude — D-04). */
+const JANELA_MESES = 3
+
+/**
+ * Meses anteriores ao `month` ('YYYY-MM'), do mais antigo ao mais recente, via
+ * date-fns (subMonths) — nunca aritmética de mês na mão (virada de ano correta).
+ * Ex.: mesesAnteriores('2026-01', 3) → ['2025-10', '2025-11', '2025-12'].
+ */
+function mesesAnteriores(month: string, janela: number): string[] {
+  const base = parse(month, 'yyyy-MM', new Date())
+  const meses: string[] = []
+  for (let i = janela; i >= 1; i--) {
+    meses.push(format(subMonths(base, i), 'yyyy-MM'))
+  }
+  return meses
+}
 
 /**
  * Pró-labore pago por UMA empresa no mês = soma das SAÍDAS marcadas como
@@ -96,4 +125,105 @@ export async function loadConsolidadoData(
   const totais = somarConsolidado(linhasOrdenadas)
 
   return { linhas: linhasOrdenadas, totais }
+}
+
+/** Projeção de uma empresa (nome/cor para rotular + os meses projetados). */
+export interface ProjecaoEmpresa {
+  empresaId: string
+  nome: string
+  cor: string
+  meses: MesProjetado[]
+}
+
+export interface ProjecaoData {
+  /** Projeção da FAMÍLIA (Casa): renda esperada − despesas esperadas (D-04). */
+  projecaoFamilia: MesProjetado[]
+  /** Projeção POR empresa: receita − custo − DAS estimado (D-04). */
+  projecaoPorEmpresa: ProjecaoEmpresa[]
+}
+
+/**
+ * Monta as séries históricas (últimos ~3 meses) e projeta os próximos `numMeses`
+ * (3–6) — por empresa e para a família — aplicando as funções puras de ./projecao
+ * (CONS-03 / D-04). NÃO cumulativa: cada mês projetado é a média independente.
+ *
+ * Correção-crítica (T-04d-09): TODA query filtra por userId — a projeção só usa
+ * dados do próprio usuário; nenhuma mistura entre empresas nem entre usuários. As
+ * buscas por mês/empresa vão em Promise.all (padrão loadDashboardData).
+ *
+ * Família: renda esperada = média das ENTRADAS da Casa (origem null incluída) dos
+ * últimos meses. Despesas esperadas = contas fixas da Casa (getFixedAccounts, que
+ * têm valor e são obrigações datadas) + média das despesas VARIÁVEIS da Casa
+ * (getTotalSpent da Casa menos as contas fixas, por mês, nunca negativo) — como
+ * pede o CONTEXT ("contas fixas + média das despesas variáveis"). Família não tem
+ * DAS (dasEsperado = 0).
+ */
+export async function loadProjecaoData(
+  userId: string,
+  month: string,
+  numMeses = JANELA_MESES
+): Promise<ProjecaoData> {
+  if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
+
+  const janela = mesesAnteriores(month, JANELA_MESES)
+  const [empresas, contasFixas] = await Promise.all([
+    getEmpresas(userId),
+    getFixedAccounts(userId),
+  ])
+
+  // Soma das contas fixas da Casa (obrigações datadas, valor conhecido — D-04).
+  const contasFixasCents = contasFixas.reduce((acc, c) => acc + c.amountCents, 0)
+
+  // --- Família (Casa, empresaId null) -------------------------------------
+  const [entradasCasaSerie, saidasCasaSerie] = await Promise.all([
+    Promise.all(janela.map((m) => getTotalEntradas(userId, m, null))),
+    Promise.all(janela.map((m) => getTotalSpent(userId, m, null))),
+  ])
+  // Despesa variável do mês = saída total da Casa − contas fixas, nunca negativa.
+  const variaveisSerie = saidasCasaSerie.map((saida) =>
+    Math.max(0, saida - contasFixasCents)
+  )
+  const rendaEsperada = mediaUltimosMeses(entradasCasaSerie)
+  const despesaEsperadaFamilia = contasFixasCents + mediaUltimosMeses(variaveisSerie)
+  const projecaoFamilia = projetarMeses(
+    month,
+    numMeses,
+    rendaEsperada,
+    despesaEsperadaFamilia,
+    0 // família não tem DAS (D-04)
+  )
+
+  // --- Por empresa --------------------------------------------------------
+  const projecaoPorEmpresa: ProjecaoEmpresa[] = await Promise.all(
+    empresas.map(async (empresa): Promise<ProjecaoEmpresa> => {
+      const [entradasSerie, saidasSerie] = await Promise.all([
+        Promise.all(janela.map((m) => getTotalEntradas(userId, m, empresa.id))),
+        Promise.all(janela.map((m) => getTotalSpent(userId, m, empresa.id))),
+      ])
+      const receitaEsperada = mediaUltimosMeses(entradasSerie)
+      const custoEsperado = mediaUltimosMeses(saidasSerie)
+
+      // DAS estimado sobre a receita MÉDIA projetada (reusa a fn de 04d-02).
+      const aliquota =
+        empresa.aliquotaDasPercent != null
+          ? Number(empresa.aliquotaDasPercent)
+          : null
+      const dasEsperado = computeDasEstimado(aliquota, receitaEsperada)
+
+      return {
+        empresaId: empresa.id,
+        nome: empresa.nome,
+        cor: empresa.cor,
+        meses: projetarMeses(
+          month,
+          numMeses,
+          receitaEsperada,
+          custoEsperado,
+          dasEsperado
+        ),
+      }
+    })
+  )
+
+  return { projecaoFamilia, projecaoPorEmpresa }
 }
