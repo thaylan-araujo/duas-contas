@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useContaStore, empresaIdDoContexto } from '@/store/conta'
 import {
   LayoutGrid,
   PlusCircle,
@@ -50,6 +51,11 @@ function isEmpresaRoute(pathname: string): boolean {
 export function BottomNav() {
   const pathname = usePathname()
   const [sheetOpen, setSheetOpen] = useState(false)
+  // Propaga o empresaId da empresa ativa para os links (contexto não se perde ao navegar).
+  const contaAtiva = useContaStore((s) => s.contaAtiva)
+  const empresaId = empresaIdDoContexto(contaAtiva)
+  const hrefWith = (href: string) =>
+    empresaId ? `${href}?empresaId=${empresaId}` : href
 
   function getIconColor(href: string, isEmpresa?: boolean): string {
     const isActive = pathname.startsWith(href)
@@ -69,7 +75,7 @@ export function BottomNav() {
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={hrefWith(item.href)}
             className="flex flex-col items-center justify-center min-h-[44px] min-w-[44px] gap-0.5"
             aria-current={isActive ? 'page' : undefined}
           >
@@ -108,7 +114,7 @@ export function BottomNav() {
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={hrefWith(item.href)}
                   onClick={() => setSheetOpen(false)}
                   className={`flex items-center gap-3 min-h-[44px] px-4 rounded-lg transition-colors ${
                     isActive

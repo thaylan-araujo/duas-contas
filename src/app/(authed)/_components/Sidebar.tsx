@@ -3,6 +3,7 @@
 // Client Component — needs usePathname for active link state
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useContaStore, empresaIdDoContexto } from '@/store/conta'
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -42,6 +43,12 @@ function isEmpresaRoute(pathname: string): boolean {
 
 export function Sidebar() {
   const pathname = usePathname()
+  // Propaga o empresaId da empresa ativa para os links do menu, para o contexto
+  // não se perder ao navegar (Casa = sem param).
+  const contaAtiva = useContaStore((s) => s.contaAtiva)
+  const empresaId = empresaIdDoContexto(contaAtiva)
+  const hrefWith = (href: string) =>
+    empresaId ? `${href}?empresaId=${empresaId}` : href
 
   function getItemClasses(href: string): string {
     const isActive = pathname.startsWith(href)
@@ -64,7 +71,7 @@ export function Sidebar() {
     return (
       <Link
         key={item.href}
-        href={item.href}
+        href={hrefWith(item.href)}
         className={getItemClasses(item.href)}
         aria-current={isActive ? 'page' : undefined}
       >
