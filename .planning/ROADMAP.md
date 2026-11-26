@@ -18,6 +18,7 @@
 - [ ] **Phase 6: Relatório Mensal** - Relatório completo e exportação em PDF
 - [ ] **Phase 7: Importação CSV/OFX** - Upload de extrato com categorização automática
 - [ ] **Phase 8: PWA Polish** - Mobile refinado, lançamento rápido e instalação PWA
+- [ ] **Phase 9: Assistente de WhatsApp (IA)** — **PRIORIDADE ATUAL** — lançar e consultar pelo WhatsApp via Evolution API + IA (ver docs/superpowers/specs/2026-11-26-whatsapp-assistant-design.md)
 
 ---
 
@@ -283,6 +284,34 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 9: Assistente de WhatsApp (IA)
+
+**Goal**: O usuário lança gastos/receitas e consulta relatórios pelo WhatsApp (número dedicado do bot). Uma frase em PT-BR vira lançamento no destino certo (Casa ou empresa), respeitando a regra de ouro Casa × Empresa (na dúvida, pergunta); o bot confirma e responde consultas do mês.
+**Mode:** mvp
+**Depends on**: Phase 4 (lançamentos, pró-labore, P&L já existem e são reusados)
+**Design**: `docs/superpowers/specs/2026-11-26-whatsapp-assistant-design.md` (fonte autoritativa; leitura obrigatória antes de planejar)
+**Transporte**: Evolution API (self-hosted na VPS do usuário) — webhook recebe, REST envia; app serverless na Vercel. IA: Claude Haiku.
+**Success Criteria** (what must be TRUE):
+
+  1. O usuário manda "gastei 50 de gasolina na Casa" e o bot cria o lançamento no destino certo e confirma com um resumo ("✓ R$ 50 · Combustível · Casa")
+  2. Quando o destino (Casa × empresa) não fica claro, o bot pergunta antes de lançar — nunca adivinha
+  3. Só o número autorizado do usuário consegue lançar/consultar; webhooks repetidos não duplicam lançamento
+  4. O usuário consulta pelo chat (gasto por categoria, restante da Casa, P&L de uma empresa, resumo do mês) e recebe a resposta formatada em PT-BR (R$ 1.234,56, dd/mm/aaaa)
+  5. O pró-labore pelo WhatsApp cria o par atômico (saída da empresa + entrada na Casa) com confirmação reforçada
+
+**Fatias** (planejadas uma por vez):
+- **Fatia 1** — Texto → lançar simples (webhook + segurança + allowlist + idempotência + IA + regra de destino + multi-turno + criar lançamento + confirmação). *Pró-labore fora.*
+- **Fatia 2** — Pró-labore por chat (par atômico, confirmação reforçada)
+- **Fatia 3** — Relatórios por chat
+- **Fatia 4** — Foto de cupom (OCR via Claude visão) — spike antes
+- **Fatia 5** — Áudio (transcrição) — spike antes
+
+**Plans**: Fatia 1 — 3 plans (em waves 1→2→3)
+- [ ] 09-01-PLAN.md — Fundação: migração aditiva (3 tabelas) + SDK Anthropic + exclusão de /api/whatsapp no middleware + funções puras parse/resolve/schema (Wave 0 RED)
+- [ ] 09-02-PLAN.md — Caminho feliz ponta-a-ponta: webhook (segredo+allowlist+dedupe) → Claude Haiku → resolve → createTransactionService (reuso) → confirmação (C-1, C-3)
+- [ ] 09-03-PLAN.md — Multi-turno (pergunta quando incerto + completa na próxima msg, C-2) + setup externo (env/instância Evolution/allowlist) + verificação ponta-a-ponta real
+**UI hint**: no (canal é o WhatsApp; sem telas novas — só setup/env)
+
 ---
 
 ## Progress
@@ -298,6 +327,7 @@ Plans:
 | 6. Relatório Mensal | 0/? | Not started | - |
 | 7. Importação CSV/OFX | 0/? | Not started | - |
 | 8. PWA Polish | 0/? | Not started | - |
+| 9. Assistente de WhatsApp (IA) | 0/3 (Fatia 1) | **Priority — Fatia 1 planejada (3 plans)** | - |
 
 ---
 
