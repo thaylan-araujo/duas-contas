@@ -42,6 +42,15 @@
 - [x] **DASH-01**: Usuário vê painel da Casa com cartões: teto do mês, total planejado, folga e gasto até hoje
 - [x] **DASH-02**: Usuário vê barras de distribuição por categoria e gráfico de gastos semana a semana
 
+### Pró-labore → Renda Familiar (Fase 4 · Fatia 3 — entregue 26/11/2026)
+
+- [x] **PL-01**: Aplicar pró-labore manual (empresa origem → Casa) como par atômico
+- [x] **PL-02**: Categoria "Pró-labore" garantida por empresa e na Casa
+- [x] **PL-03**: Pró-labore reduz o lucro da empresa (custo)
+- [x] **PL-04**: Pró-labore soma no "Dinheiro do mês" da Casa
+- [x] **PL-05**: Bloco "Renda familiar por origem" na Visão Geral da Casa
+- [x] **PL-06**: Par de pró-labore bloqueado para edição individual; exclusão atômica
+
 ### Casa — Acompanhamento (rework, Fase 3.5 — entregue 25/11/2026)
 
 - [x] **CASA-R-01**: Dinheiro do mês = soma automática das entradas da Casa no mês

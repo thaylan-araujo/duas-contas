@@ -188,15 +188,15 @@ Plans:
 Plans:
 **Wave 0**
 
-- [ ] 04c-01-PLAN.md — Checkpoint de backup + migração aditiva `Transaction.origemEmpresaId` (rastreia a empresa de origem do pró-labore)
+- [x] 04c-01-PLAN.md — Checkpoint de backup + migração aditiva `Transaction.origemEmpresaId` (rastreia a empresa de origem do pró-labore)
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
-- [ ] 04c-02-PLAN.md — Fluxo "Aplicar pró-labore" reabilitado (par atômico multi-empresa): service/schema/actions empresaId-aware + getOrCreate categoria "Pró-labore" + TransactionSheet com origem = contexto ativo + testes Vitest + verificação ponta a ponta
+- [x] 04c-02-PLAN.md — Fluxo "Aplicar pró-labore" reabilitado (par atômico multi-empresa): service/schema/actions empresaId-aware + getOrCreate categoria "Pró-labore" + TransactionSheet com origem = contexto ativo + testes Vitest + verificação ponta a ponta
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04c-03-PLAN.md — Bloco "Renda familiar por origem" na Visão Geral da Casa: função pura testada (agrupamento por origem) + service/loader + componente + render no contexto Casa + verificação ponta a ponta
+- [x] 04c-03-PLAN.md — Bloco "Renda familiar por origem" na Visão Geral da Casa: função pura testada (agrupamento por origem) + service/loader + componente + render no contexto Casa + verificação ponta a ponta
 
 ### Phase 5: Calendário e Alertas
 
