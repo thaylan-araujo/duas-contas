@@ -178,12 +178,23 @@ export function TransactionSheet({
   const amountPreview =
     watchedAmountCents > 0 ? formatBRL(watchedAmountCents) : null
 
-  // Pró-labore multi-empresa está DESABILITADO nesta fatia (04-02): a mecânica
-  // multi-origem (Empresa → Casa) depende da seleção de empresa que chega numa
-  // fatia futura. A opção não é selecionável — ver handleTipoChange.
+  // Pró-labore multi-empresa (04c-02): habilitado quando o contexto ativo é uma
+  // empresa (empresaIdContexto != null) — a empresa de origem É o contexto ativo.
+  // No contexto Casa não há empresa de origem, então a opção fica desabilitada.
   function handleTipoChange(value: string) {
     if (value === PRO_LABORE_SENTINEL) {
-      // no-op: opção desabilitada nesta fatia
+      if (empresaIdContexto === null) {
+        // Casa: sem empresa de origem — opção desabilitada, no-op defensivo.
+        return
+      }
+      setIsProLabore(true)
+      // Os campos Descrição e Categoria ficam ocultos no modo pró-labore, mas o
+      // resolver (transactionSchema) os exige. Preenche valores sentinela para o
+      // handleSubmit(onSubmit) disparar — o service ignora ambos no pró-labore
+      // (descrição fixa "Pró-labore" + categoria resolvida via getOrCreate).
+      setValue('description', 'Pró-labore', { shouldValidate: true })
+      setValue('categoryId', '__pro_labore__', { shouldValidate: true })
+      clearErrors(['description', 'categoryId'])
       return
     }
     setIsProLabore(false)
@@ -247,10 +258,13 @@ export function TransactionSheet({
 
   function onSubmit(data: TransactionFormData) {
     if (isProLabore) {
+      // A empresa de origem = o contexto ativo (garantido != null: a opção só é
+      // selecionável no contexto de empresa). A categoria "Pró-labore" é resolvida
+      // no service via getOrCreate, por isso não vai no payload.
       const proLaboreData: ProLaboreFormData = {
         date: data.date,
         amountCents: data.amountCents,
-        categoryId: data.categoryId,
+        origemEmpresaId: empresaIdContexto ?? '',
       }
 
       startTransition(async () => {
@@ -333,6 +347,7 @@ export function TransactionSheet({
   const sharedFormProps = {
     isEditing,
     isProLabore,
+    empresaIdContexto,
     isPending,
     handleSubmit,
     onSubmit,
@@ -392,6 +407,7 @@ export function TransactionSheet({
 interface SheetFormContentProps {
   isEditing: boolean
   isProLabore: boolean
+  empresaIdContexto: string | null
   isPending: boolean
   handleSubmit: ReturnType<typeof useForm<TransactionFormData>>['handleSubmit']
   onSubmit: (data: TransactionFormData) => void
@@ -418,6 +434,7 @@ interface SheetFormContentProps {
 function SheetFormContent({
   isEditing,
   isProLabore,
+  empresaIdContexto,
   isPending,
   handleSubmit,
   onSubmit,
@@ -445,7 +462,7 @@ function SheetFormContent({
       {/* O contexto (Casa/empresa) vem do seletor global, não é escolhido aqui.
           O toggle Casa/Empresa foi removido nesta fatia (04-02). */}
 
-      {/* Tipo — a opção Pró-labore está desabilitada nesta fatia (deferida) */}
+      {/* Tipo — a opção Pró-labore é habilitada no contexto de empresa (04c-02) */}
       <div className="space-y-1.5">
         <Label htmlFor="type" className="text-sm font-medium text-text-primary">
           Tipo
@@ -460,9 +477,15 @@ function SheetFormContent({
           <SelectContent>
             <SelectItem value="ENTRADA">Entrada</SelectItem>
             <SelectItem value="SAIDA">Saída</SelectItem>
-            {/* Pró-labore multi-empresa chega em uma próxima fatia (deferido 04-02) */}
-            <SelectItem value={PRO_LABORE_SENTINEL} disabled>
-              Pró-labore (em breve)
+            {/* Pró-labore: habilitado só no contexto de empresa (a origem é a
+                empresa ativa). Na Casa não há empresa de origem → desabilitado. */}
+            <SelectItem
+              value={PRO_LABORE_SENTINEL}
+              disabled={empresaIdContexto === null}
+            >
+              {empresaIdContexto === null
+                ? 'Pró-labore (selecione uma empresa)'
+                : 'Pró-labore (saída → Casa)'}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -538,7 +561,9 @@ function SheetFormContent({
         )}
       </div>
 
-      {/* Categoria */}
+      {/* Categoria — oculta no modo pró-labore (categoria fixa "Pró-labore",
+          resolvida no service via getOrCreate; PL-02) */}
+      {!isProLabore && (
       <div className="space-y-1.5">
         <Label htmlFor="categoryId" className="text-sm font-medium text-text-primary">
           Categoria
@@ -608,6 +633,7 @@ function SheetFormContent({
           <p className="text-sm text-destructive" role="alert">{errors.categoryId.message}</p>
         )}
       </div>
+      )}
 
       {/* Observação — hidden in pró-labore mode */}
       {!isProLabore && (
