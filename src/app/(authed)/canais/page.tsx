@@ -34,7 +34,7 @@ export default async function CanaisPage({ searchParams }: PageProps) {
     empresaIdContexto !== null
       ? await prisma.empresa.findFirst({
           where: { id: empresaIdContexto, userId },
-          select: { id: true, nome: true },
+          select: { id: true, nome: true, aliquotaDasPercent: true },
         })
       : null
 
@@ -43,13 +43,21 @@ export default async function CanaisPage({ searchParams }: PageProps) {
     return <CanaisPlaceholder />
   }
 
+  // Decimal? do Prisma → number | null; null = "sem alíquota" (D-03).
+  const aliquotaDasPercent =
+    empresa.aliquotaDasPercent != null ? Number(empresa.aliquotaDasPercent) : null
+
+  // DAS estimado reutiliza o faturamento bruto já calculado por loadPnlData
+  // (nenhuma query nova para o DAS — CONS-02/D-03). computeDasEstimado é a fn pura.
   const {
     brutoCents,
     liquidoCents,
     lucroCents,
+    dasEstimadoCents,
+    aliquotaDefinida,
     receitasPorCategoria,
     custosPorCategoria,
-  } = await loadPnlData(userId, currentMonth, empresa.id)
+  } = await loadPnlData(userId, currentMonth, empresa.id, aliquotaDasPercent)
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,6 +71,8 @@ export default async function CanaisPage({ searchParams }: PageProps) {
         brutoCents={brutoCents}
         liquidoCents={liquidoCents}
         lucroCents={lucroCents}
+        dasEstimadoCents={dasEstimadoCents}
+        aliquotaDefinida={aliquotaDefinida}
       />
 
       <CategoryBreakdownList
