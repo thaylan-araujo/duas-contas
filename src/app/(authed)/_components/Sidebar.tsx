@@ -11,6 +11,7 @@ import {
   Receipt,
   TrendingUp,
   CreditCard,
+  Layers,
   Calendar,
   FileText,
 } from 'lucide-react'
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
   { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, group: 'Casa', context: 'casa' },
   // Empresa (só no contexto de uma empresa)
   { label: 'Canais e caixa', href: '/canais', icon: TrendingUp, group: 'Empresa', context: 'empresa' },
+  { label: 'Consolidado', href: '/consolidado', icon: Layers, group: 'Empresa', context: 'empresa' },
   { label: 'Dívidas', href: '/dividas', icon: CreditCard, group: 'Empresa', context: 'empresa' },
   // Geral — servem aos dois
   { label: 'Calendário', href: '/calendario', icon: Calendar, group: 'Geral', context: 'shared' },
@@ -40,7 +42,11 @@ const navItems: NavItem[] = [
 ]
 
 function isEmpresaRoute(pathname: string): boolean {
-  return pathname.startsWith('/canais') || pathname.startsWith('/dividas')
+  return (
+    pathname.startsWith('/canais') ||
+    pathname.startsWith('/consolidado') ||
+    pathname.startsWith('/dividas')
+  )
 }
 
 export function Sidebar() {

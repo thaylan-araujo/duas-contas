@@ -13,6 +13,7 @@ import {
   Menu,
   Receipt,
   CreditCard,
+  Layers,
   Calendar,
   FileText,
 } from 'lucide-react'
@@ -41,13 +42,18 @@ const primaryItems: NavItem[] = [
 
 const sheetItems: NavItem[] = [
   { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, context: 'casa' },
+  { label: 'Consolidado', href: '/consolidado', icon: Layers, isEmpresa: true, context: 'empresa' },
   { label: 'Dívidas', href: '/dividas', icon: CreditCard, isEmpresa: true, context: 'empresa' },
   { label: 'Calendário', href: '/calendario', icon: Calendar, context: 'shared' },
   { label: 'Relatório mensal', href: '/relatorio', icon: FileText, context: 'shared' },
 ]
 
 function isEmpresaRoute(pathname: string): boolean {
-  return pathname.startsWith('/canais') || pathname.startsWith('/dividas')
+  return (
+    pathname.startsWith('/canais') ||
+    pathname.startsWith('/consolidado') ||
+    pathname.startsWith('/dividas')
+  )
 }
 
 export function BottomNav() {
