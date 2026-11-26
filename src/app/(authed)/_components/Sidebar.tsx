@@ -20,21 +20,23 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ size?: number; className?: string }>
   group: 'ungrouped' | 'Casa' | 'Empresa' | 'Geral'
+  // 'shared' aparece sempre; 'casa'/'empresa' só no contexto correspondente.
+  context: 'shared' | 'casa' | 'empresa'
 }
 
 const navItems: NavItem[] = [
-  // Ungrouped
-  { label: 'Visão geral', href: '/visao-geral', icon: LayoutDashboard, group: 'ungrouped' },
-  // Casa
-  { label: 'Lançamentos', href: '/lancamentos', icon: ArrowLeftRight, group: 'Casa' },
-  { label: 'Planejamento e semanas', href: '/planejamento', icon: CalendarDays, group: 'Casa' },
-  { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, group: 'Casa' },
-  // Empresa
-  { label: 'Canais e caixa', href: '/canais', icon: TrendingUp, group: 'Empresa' },
-  { label: 'Dívidas', href: '/dividas', icon: CreditCard, group: 'Empresa' },
-  // Geral
-  { label: 'Calendário', href: '/calendario', icon: Calendar, group: 'Geral' },
-  { label: 'Relatório mensal', href: '/relatorio', icon: FileText, group: 'Geral' },
+  // Ungrouped — servem aos dois contextos
+  { label: 'Visão geral', href: '/visao-geral', icon: LayoutDashboard, group: 'ungrouped', context: 'shared' },
+  { label: 'Lançamentos', href: '/lancamentos', icon: ArrowLeftRight, group: 'ungrouped', context: 'shared' },
+  // Casa (só no contexto Casa)
+  { label: 'Planejamento e semanas', href: '/planejamento', icon: CalendarDays, group: 'Casa', context: 'casa' },
+  { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, group: 'Casa', context: 'casa' },
+  // Empresa (só no contexto de uma empresa)
+  { label: 'Canais e caixa', href: '/canais', icon: TrendingUp, group: 'Empresa', context: 'empresa' },
+  { label: 'Dívidas', href: '/dividas', icon: CreditCard, group: 'Empresa', context: 'empresa' },
+  // Geral — servem aos dois
+  { label: 'Calendário', href: '/calendario', icon: Calendar, group: 'Geral', context: 'shared' },
+  { label: 'Relatório mensal', href: '/relatorio', icon: FileText, group: 'Geral', context: 'shared' },
 ]
 
 function isEmpresaRoute(pathname: string): boolean {
@@ -49,6 +51,12 @@ export function Sidebar() {
   const empresaId = empresaIdDoContexto(contaAtiva)
   const hrefWith = (href: string) =>
     empresaId ? `${href}?empresaId=${empresaId}` : href
+  // Mostra um item conforme o contexto ativo: 'shared' sempre; 'casa' só na Casa;
+  // 'empresa' só quando uma empresa está selecionada.
+  const showInContext = (item: NavItem) =>
+    item.context === 'shared' ||
+    (item.context === 'casa' && !empresaId) ||
+    (item.context === 'empresa' && !!empresaId)
 
   function getItemClasses(href: string): string {
     const isActive = pathname.startsWith(href)
@@ -61,10 +69,10 @@ export function Sidebar() {
     return 'flex items-center gap-3 min-h-[44px] px-4 rounded-lg bg-casa-light text-casa transition-colors'
   }
 
-  const ungroupedItems = navItems.filter((i) => i.group === 'ungrouped')
-  const casaItems = navItems.filter((i) => i.group === 'Casa')
-  const empresaItems = navItems.filter((i) => i.group === 'Empresa')
-  const geralItems = navItems.filter((i) => i.group === 'Geral')
+  const ungroupedItems = navItems.filter((i) => i.group === 'ungrouped' && showInContext(i))
+  const casaItems = navItems.filter((i) => i.group === 'Casa' && showInContext(i))
+  const empresaItems = navItems.filter((i) => i.group === 'Empresa' && showInContext(i))
+  const geralItems = navItems.filter((i) => i.group === 'Geral' && showInContext(i))
 
   function renderItem(item: NavItem) {
     const isActive = pathname.startsWith(item.href)
@@ -95,21 +103,25 @@ export function Sidebar() {
         {/* Ungrouped — Visão geral */}
         {ungroupedItems.map(renderItem)}
 
-        {/* Casa group */}
-        <div className="mt-3">
-          <p className="px-4 py-1 text-xs text-text-secondary uppercase tracking-wide font-medium">
-            Casa
-          </p>
-          {casaItems.map(renderItem)}
-        </div>
+        {/* Casa group — só no contexto Casa */}
+        {casaItems.length > 0 && (
+          <div className="mt-3">
+            <p className="px-4 py-1 text-xs text-text-secondary uppercase tracking-wide font-medium">
+              Casa
+            </p>
+            {casaItems.map(renderItem)}
+          </div>
+        )}
 
-        {/* Empresa group */}
-        <div className="mt-3">
-          <p className="px-4 py-1 text-xs text-text-secondary uppercase tracking-wide font-medium">
-            Empresa
-          </p>
-          {empresaItems.map(renderItem)}
-        </div>
+        {/* Empresa group — só no contexto de uma empresa */}
+        {empresaItems.length > 0 && (
+          <div className="mt-3">
+            <p className="px-4 py-1 text-xs text-text-secondary uppercase tracking-wide font-medium">
+              Empresa
+            </p>
+            {empresaItems.map(renderItem)}
+          </div>
+        )}
 
         {/* Geral group */}
         <div className="mt-3">

@@ -28,20 +28,22 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ size?: number; className?: string }>
   isEmpresa?: boolean
+  // 'shared' aparece sempre; 'casa'/'empresa' só no contexto correspondente.
+  context: 'shared' | 'casa' | 'empresa'
 }
 
 const primaryItems: NavItem[] = [
-  { label: 'Visão geral', href: '/visao-geral', icon: LayoutGrid },
-  { label: 'Lançamentos', href: '/lancamentos', icon: PlusCircle },
-  { label: 'Planejamento', href: '/planejamento', icon: CalendarDays },
-  { label: 'Empresa', href: '/canais', icon: Briefcase, isEmpresa: true },
+  { label: 'Visão geral', href: '/visao-geral', icon: LayoutGrid, context: 'shared' },
+  { label: 'Lançamentos', href: '/lancamentos', icon: PlusCircle, context: 'shared' },
+  { label: 'Planejamento', href: '/planejamento', icon: CalendarDays, context: 'casa' },
+  { label: 'Canais e caixa', href: '/canais', icon: Briefcase, isEmpresa: true, context: 'empresa' },
 ]
 
 const sheetItems: NavItem[] = [
-  { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt },
-  { label: 'Dívidas', href: '/dividas', icon: CreditCard, isEmpresa: true },
-  { label: 'Calendário', href: '/calendario', icon: Calendar },
-  { label: 'Relatório mensal', href: '/relatorio', icon: FileText },
+  { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, context: 'casa' },
+  { label: 'Dívidas', href: '/dividas', icon: CreditCard, isEmpresa: true, context: 'empresa' },
+  { label: 'Calendário', href: '/calendario', icon: Calendar, context: 'shared' },
+  { label: 'Relatório mensal', href: '/relatorio', icon: FileText, context: 'shared' },
 ]
 
 function isEmpresaRoute(pathname: string): boolean {
@@ -56,6 +58,12 @@ export function BottomNav() {
   const empresaId = empresaIdDoContexto(contaAtiva)
   const hrefWith = (href: string) =>
     empresaId ? `${href}?empresaId=${empresaId}` : href
+  const showInContext = (item: NavItem) =>
+    item.context === 'shared' ||
+    (item.context === 'casa' && !empresaId) ||
+    (item.context === 'empresa' && !!empresaId)
+  const visiblePrimary = primaryItems.filter(showInContext)
+  const visibleSheet = sheetItems.filter(showInContext)
 
   function getIconColor(href: string, isEmpresa?: boolean): string {
     const isActive = pathname.startsWith(href)
@@ -70,7 +78,7 @@ export function BottomNav() {
       aria-label="Navegação inferior"
     >
       {/* Primary nav items */}
-      {primaryItems.map((item) => {
+      {visiblePrimary.map((item) => {
         const isActive = pathname.startsWith(item.href)
         return (
           <Link
@@ -109,7 +117,7 @@ export function BottomNav() {
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-1 mt-4 pb-4" aria-label="Mais opções">
-            {sheetItems.map((item) => {
+            {visibleSheet.map((item) => {
               const isActive = pathname.startsWith(item.href)
               return (
                 <Link
