@@ -13,7 +13,7 @@
 - [x] **Phase 2: Core CRUD** - Lançamentos, pró-labore e dashboard da Casa (completed 2026-11-24)
 - [x] **Phase 3: Planning** - Orçamento mensal, cartões semanais, contas fixas e metas (completed 2026-11-25)
 - [x] **Phase 3.5: Casa — Acompanhamento (rework)** - substitui o planejamento semanal manual por barra "dinheiro do mês" + tetos por categoria + gasto semanal automático; remove PlanItem/WeeklySpend (ver docs/superpowers/specs/2026-11-25-casa-acompanhamento-design.md)
-- [ ] **Phase 4: Empresas (multi) e Renda Familiar** - Casa + N empresas independentes (P&L por empresa), pró-labore de cada → renda familiar, consolidado + projeção, dívidas e DAS por empresa (ver docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md)
+- [x] **Phase 4: Empresas (multi) e Renda Familiar** - Casa + N empresas independentes (P&L por empresa), pró-labore de cada → renda familiar, consolidado + projeção, dívidas e DAS por empresa (ver docs/superpowers/specs/2026-11-25-multi-empresa-renda-familiar-design.md)
 - [ ] **Phase 5: Calendário e Alertas** - Calendário de vencimentos com notificações push
 - [ ] **Phase 6: Relatório Mensal** - Relatório completo e exportação em PDF
 - [ ] **Phase 7: Importação CSV/OFX** - Upload de extrato com categorização automática
@@ -204,19 +204,19 @@ Plans:
 Plans:
 **Wave 0**
 
-- [ ] 04d-01-PLAN.md — Checkpoint de backup + migração aditiva `Empresa.aliquotaDasPercent` (alíquota do DAS por empresa, nullable) [CONS-02]
+- [x] 04d-01-PLAN.md — Checkpoint de backup + migração aditiva `Empresa.aliquotaDasPercent` (alíquota do DAS por empresa, nullable) [CONS-02]
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
-- [ ] 04d-02-PLAN.md — DAS estimado por empresa (fatia vertical): função pura `computeDasEstimado` + Vitest + alíquota editável no CRUD de empresa + card "DAS estimado" no P&L (/canais) [CONS-02]
+- [x] 04d-02-PLAN.md — DAS estimado por empresa (fatia vertical): função pura `computeDasEstimado` + Vitest + alíquota editável no CRUD de empresa + card "DAS estimado" no P&L (/canais) [CONS-02]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04d-03-PLAN.md — Tela "Consolidado" (fatia vertical): funções puras de agregação + Vitest + loader reusando P&L/DAS por empresa + tabela por empresa + totais + item de menu context 'empresa' [CONS-01]
+- [x] 04d-03-PLAN.md — Tela "Consolidado" (fatia vertical): funções puras de agregação + Vitest + loader reusando P&L/DAS por empresa + tabela por empresa + totais + item de menu context 'empresa' [CONS-01]
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04d-04-PLAN.md — Projeção simples + alerta de saldo negativo (fatia vertical): funções puras de média/projeção/mês negativo + Vitest + loader da série histórica + tabela de projeção por mês com destaque de negativo e rótulo de estimativa [CONS-03, CONS-04]
+- [x] 04d-04-PLAN.md — Projeção simples + alerta de saldo negativo (fatia vertical): funções puras de média/projeção/mês negativo + Vitest + loader da série histórica + tabela de projeção por mês com destaque de negativo e rótulo de estimativa [CONS-03, CONS-04]
 
 ### Phase 5: Calendário e Alertas
 

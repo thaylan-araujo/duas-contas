@@ -42,6 +42,13 @@
 - [x] **DASH-01**: Usuário vê painel da Casa com cartões: teto do mês, total planejado, folga e gasto até hoje
 - [x] **DASH-02**: Usuário vê barras de distribuição por categoria e gráfico de gastos semana a semana
 
+### Consolidado + Projeção (Fase 4 · Fatia 4 — entregue 26/11/2026)
+
+- [x] **CONS-01**: Tela Consolidado (soma das empresas: faturamento/lucro/DAS/pró-labore + total)
+- [x] **CONS-02**: Estimativa de DAS por empresa (alíquota % × faturamento)
+- [x] **CONS-03**: Projeção simples de "quanto vai sobrar" (família + por empresa, próximos meses)
+- [x] **CONS-04**: Alerta de saldo negativo (família + por empresa)
+
 ### Pró-labore → Renda Familiar (Fase 4 · Fatia 3 — entregue 26/11/2026)
 
 - [x] **PL-01**: Aplicar pró-labore manual (empresa origem → Casa) como par atômico
