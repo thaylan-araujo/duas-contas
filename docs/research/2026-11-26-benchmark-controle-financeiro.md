@@ -40,7 +40,7 @@ Comprovado e com escala BR (Magie: R$ 1 bi no 1º ano como "banco no WhatsApp").
 - **Confirmação:** lança e mostra o resumo ("✓ R$ 50 · Alimentação · Casa"); pergunta só quando a extração ficou incerta.
 - **Relatórios por chat:** gasto por categoria · restante da Casa · lucro/faturamento por empresa (P&L) · resumo geral do mês.
 - **Open Finance (importar banco):** fase separada depois (junto da importação CSV/OFX do roadmap).
-- **Transporte do WhatsApp:** decisão do usuário = **WhatsApp "normal"** (automação não-oficial via WhatsApp Web, ex.: whatsapp-web.js/Baileys), **não** a API oficial da Meta. Ver caveats abaixo.
+- **Transporte do WhatsApp:** decisão do usuário = **WhatsApp "normal" via Evolution API** (gateway open-source self-hosted, Baileys por baixo; o usuário já tinha experiência), **não** a API oficial da Meta. A Evolution roda em Docker numa VPS barata, mantém a sessão do número (QR) e expõe webhook (recebe) + REST (envia). O nosso app (Vercel, serverless) só recebe o webhook, roda a IA, grava no Supabase e responde via REST da Evolution — **sem servidor sempre-ligado do nosso lado** (quem fica ligado é só a Evolution). Objetivo: custo mínimo (só a VPS + centavos de IA por mensagem).
 
 ### Spike (26/11/2026) — extração em PT-BR: ✅ núcleo funciona
 Testadas 15 frases reais (empresas Elite Juris/Achadinhos/Infoproduto + Casa). A IA extraiu com segurança valores (R$ 1.234,56, "cinquenta reais"), datas ("ontem"), tipo, e **destino falado**; perguntou quando o destino não foi dito; distinguiu lançamento de pergunta de relatório; tratou multi-item ("almoço 42 e uber 23"). A validar ainda: precisão de **OCR de cupom** e **áudio**, e custo real.
