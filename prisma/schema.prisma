@@ -58,6 +58,12 @@ model Empresa {
   // empresa DE ONDE o dinheiro saiu é esta empresa (04c-01/D-04). Distinto de
   // `transactions` acima (a conta à qual o lançamento pertence).
   transacoesOrigem Transaction[] @relation("OrigemEmpresa")
+  // Alíquota percentual do DAS (Simples Nacional) desta empresa — ex.: 6,00 ou
+  // 15,50 (04d-01/CONS-02/D-03). Decimal (não Int) porque é um percentual, não
+  // dinheiro: a convenção de centavos Int dos valores monetários permanece
+  // intocada; só a alíquota é Decimal. NULL = alíquota ainda não definida,
+  // estado legítimo e distinto de 0% → DAS estimado = 0 / "não definido" (D-03).
+  aliquotaDasPercent Decimal? @db.Decimal(5, 2)
   createdAt    DateTime      @default(now())
 
   @@unique([nome, userId])
