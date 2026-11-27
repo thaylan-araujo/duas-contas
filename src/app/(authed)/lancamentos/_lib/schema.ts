@@ -10,9 +10,18 @@ export const transactionSchema = z.object({
   empresaId: z.string().nullable(), // null = Casa
   categoryId: z.string().min(1, 'Selecione uma categoria.'),
   notes: z.string().max(200, 'Máximo 200 caracteres').optional(),
+  // Fatia 03 (C1): toda despesa avulsa pode ser "em aberto". Default PAGO —
+  // um lançamento comum já aconteceu (não muda o comportamento anterior).
+  status: z.enum(['PAGO', 'EM_ABERTO']).default('PAGO'),
+  // Vencimento opcional (string vazia = sem vencimento); relevante quando EM_ABERTO.
+  dueDate: z.string().optional(),
 })
 
+// Output type (status obrigatório — default já aplicado). Usado no service/actions.
 export type TransactionFormData = z.infer<typeof transactionSchema>
+// Input type (status opcional por causa do .default()). Usado como TFieldValues
+// no useForm, para casar com o input type que o zodResolver infere.
+export type TransactionFormInput = z.input<typeof transactionSchema>
 
 export const updateTransactionSchema = transactionSchema.extend({
   id: z.string().min(1, 'ID obrigatório'),

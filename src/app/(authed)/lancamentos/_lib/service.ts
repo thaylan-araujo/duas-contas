@@ -21,11 +21,14 @@ export async function getCategories(userId: string) {
 export async function createTransactionService(
   data: TransactionFormData & { userId: string }
 ) {
-  const { date, userId, ...rest } = data
+  // `status` flui por ...rest (default PAGO já aplicado pelo schema). `dueDate`
+  // precisa de parseISO (string YYYY-MM-DD → Date) e é pulado quando vazio.
+  const { date, userId, dueDate, ...rest } = data
   return prisma.transaction.create({
     data: {
       ...rest,
       date: parseISO(date),
+      ...(dueDate ? { dueDate: parseISO(dueDate) } : {}),
       userId,
     },
   })
@@ -52,13 +55,16 @@ export async function updateTransactionService(
     throw new Error('PAIRED_TRANSACTION')
   }
 
-  const { date, ...rest } = data
+  // `status` flui por ...rest. `date`/`dueDate` são condicionais (parseISO só
+  // quando presentes — string vazia/ausente não grava, evita data inválida).
+  const { date, dueDate, ...rest } = data
 
   return prisma.transaction.update({
     where: { id },
     data: {
       ...rest,
       ...(date ? { date: parseISO(date) } : {}),
+      ...(dueDate ? { dueDate: parseISO(dueDate) } : {}),
     },
   })
 }

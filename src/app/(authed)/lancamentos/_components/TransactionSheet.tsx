@@ -24,6 +24,7 @@ import { formatBRL } from '@/lib/format'
 import {
   transactionSchema,
   type TransactionFormData,
+  type TransactionFormInput,
   type ProLaboreFormData,
 } from '../_lib/schema'
 import {
@@ -120,7 +121,7 @@ export function TransactionSheet({
     formState: { errors },
     setError,
     clearErrors,
-  } = useForm<TransactionFormData>({
+  } = useForm<TransactionFormInput, unknown, TransactionFormData>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
@@ -130,6 +131,8 @@ export function TransactionSheet({
       empresaId: empresaIdContexto,
       categoryId: '',
       notes: '',
+      status: 'PAGO',
+      dueDate: '',
     },
   })
 
@@ -409,16 +412,28 @@ interface SheetFormContentProps {
   isProLabore: boolean
   empresaIdContexto: string | null
   isPending: boolean
-  handleSubmit: ReturnType<typeof useForm<TransactionFormData>>['handleSubmit']
+  handleSubmit: ReturnType<
+    typeof useForm<TransactionFormInput, unknown, TransactionFormData>
+  >['handleSubmit']
   onSubmit: (data: TransactionFormData) => void
-  control: ReturnType<typeof useForm<TransactionFormData>>['control']
-  register: ReturnType<typeof useForm<TransactionFormData>>['register']
-  errors: ReturnType<typeof useForm<TransactionFormData>>['formState']['errors']
+  control: ReturnType<
+    typeof useForm<TransactionFormInput, unknown, TransactionFormData>
+  >['control']
+  register: ReturnType<
+    typeof useForm<TransactionFormInput, unknown, TransactionFormData>
+  >['register']
+  errors: ReturnType<
+    typeof useForm<TransactionFormInput, unknown, TransactionFormData>
+  >['formState']['errors']
   watchedCategoryId: string
   filteredCategories: Category[]
   amountPreview: string | null
-  setValue: ReturnType<typeof useForm<TransactionFormData>>['setValue']
-  clearErrors: ReturnType<typeof useForm<TransactionFormData>>['clearErrors']
+  setValue: ReturnType<
+    typeof useForm<TransactionFormInput, unknown, TransactionFormData>
+  >['setValue']
+  clearErrors: ReturnType<
+    typeof useForm<TransactionFormInput, unknown, TransactionFormData>
+  >['clearErrors']
   onClose: () => void
   displayTipoValue: string
   handleTipoChange: (value: string) => void
