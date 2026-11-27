@@ -155,7 +155,8 @@ describe('webhook route — caminho feliz (C-1)', () => {
     expect(evolutionMock.sendText).toHaveBeenCalledTimes(1)
     const [phone, text] = evolutionMock.sendText.mock.calls[0]
     expect(phone).toBe(PHONE)
-    expect(text).toContain('R$ 50,00')
+    // formatBRL usa espaço não-quebrável (NBSP) entre "R$" e o número — normaliza.
+    expect(text.replace(/ /g, ' ')).toContain('R$ 50,00')
     expect(text).toContain('Gasolina')
     expect(text).toContain('Casa')
   })
