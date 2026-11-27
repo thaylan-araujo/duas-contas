@@ -11,6 +11,9 @@ const evolutionMock = vi.hoisted(() => ({ sendText: vi.fn() }))
 const serviceMock = vi.hoisted(() => ({
   resolveContact: vi.fn(),
   dedupeInbound: vi.fn(),
+  findPendingAction: vi.fn(),
+  upsertPendingAction: vi.fn(),
+  clearPendingAction: vi.fn(),
 }))
 const empresasLoaderMock = vi.hoisted(() => ({ getEmpresas: vi.fn() }))
 const lancLoaderMock = vi.hoisted(() => ({ getCategories: vi.fn() }))
@@ -68,6 +71,10 @@ beforeEach(() => {
   // Defaults do caminho feliz (cada teste sobrescreve o que precisa).
   serviceMock.resolveContact.mockResolvedValue({ id: 'c1', phone: PHONE, userId: USER, active: true })
   serviceMock.dedupeInbound.mockResolvedValue({ duplicate: false })
+  // Sem pendência viva por padrão (fluxo normal). Os testes multi-turno sobrescrevem.
+  serviceMock.findPendingAction.mockResolvedValue(null)
+  serviceMock.upsertPendingAction.mockResolvedValue({ id: 'p1' })
+  serviceMock.clearPendingAction.mockResolvedValue({ count: 1 })
   empresasLoaderMock.getEmpresas.mockResolvedValue([EMPRESA])
   lancLoaderMock.getCategories.mockResolvedValue([CAT_CASA_GAS, CAT_EMP_VENDAS])
   lancServiceMock.createTransactionService.mockResolvedValue({ id: 'tx-1' })
@@ -238,5 +245,135 @@ describe('webhook route — incerteza e roteamento (sem persistir — 09-03)', (
 
     expect(res.status).toBe(200)
     expect(lancServiceMock.createTransactionService).not.toHaveBeenCalled()
+  })
+})
+
+describe('webhook route — multi-turno (C-2: na dúvida, pergunta e completa)', () => {
+  it('falta destino → NÃO lança; grava pendência ask_destino com a extração parcial e pergunta', async () => {
+    aiMock.extractLancamento.mockResolvedValue({
+      intent: 'lancar',
+      tipo: 'SAIDA',
+      valorCents: 5000,
+      data: '2026-11-27',
+      categoria: 'Gasolina',
+      destino: '', // destino não dito → faltou
+      confianca: 'media',
+    })
+
+    const res = await POST(webhookReq(upsert('gastei 50 de gasolina')))
+
+    expect(res.status).toBe(200)
+    expect(lancServiceMock.createTransactionService).not.toHaveBeenCalled()
+    // persiste a pendência parcial (kind ask_destino) com o que já foi extraído
+    expect(serviceMock.upsertPendingAction).toHaveBeenCalledTimes(1)
+    const arg = serviceMock.upsertPendingAction.mock.calls[0][0]
+    expect(arg.phone).toBe(PHONE)
+    expect(arg.kind).toBe('ask_destino')
+    expect(arg.partial).toMatchObject({ valorCents: 5000, categoria: 'Gasolina', tipo: 'SAIDA' })
+    expect(typeof arg.ttlMinutes).toBe('number')
+    // pergunta de destino enviada
+    expect(evolutionMock.sendText).toHaveBeenCalledTimes(1)
+    const [, text] = evolutionMock.sendText.mock.calls[0]
+    expect(text).toContain('Casa')
+  })
+
+  it('pendência ask_destino viva + resposta "Casa" → merge, lança, limpa a pendência e confirma', async () => {
+    // Não chama a IA quando há pendência viva — a mensagem É a resposta.
+    serviceMock.findPendingAction.mockResolvedValue({
+      id: 'p1',
+      phone: PHONE,
+      kind: 'ask_destino',
+      partial: { tipo: 'SAIDA', valorCents: 5000, data: '2026-11-27', categoria: 'Gasolina' },
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    })
+
+    const res = await POST(webhookReq(upsert('Casa')))
+
+    expect(res.status).toBe(200)
+    // a IA NÃO deve ser chamada (a resposta completa a pendência)
+    expect(aiMock.extractLancamento).not.toHaveBeenCalled()
+    // lança com o destino respondido (Casa → empresaId null) + categoria do partial
+    expect(lancServiceMock.createTransactionService).toHaveBeenCalledTimes(1)
+    const arg = lancServiceMock.createTransactionService.mock.calls[0][0]
+    expect(arg.empresaId).toBeNull()
+    expect(arg.categoryId).toBe(CAT_CASA_GAS.id)
+    expect(arg.amountCents).toBe(5000)
+    expect(arg.type).toBe('SAIDA')
+    expect(arg.userId).toBe(USER)
+    // limpa a pendência e confirma
+    expect(serviceMock.clearPendingAction).toHaveBeenCalledWith(PHONE)
+    expect(evolutionMock.sendText).toHaveBeenCalledTimes(1)
+    const [, text] = evolutionMock.sendText.mock.calls[0]
+    expect(text.replace(/ /g, ' ')).toContain('R$ 50,00')
+    expect(text).toContain('Casa')
+  })
+
+  it('categoria não casa → NÃO cria categoria; grava pendência ask_categoria e oferece as categorias do destino (D-04)', async () => {
+    aiMock.extractLancamento.mockResolvedValue({
+      intent: 'lancar',
+      tipo: 'SAIDA',
+      valorCents: 5000,
+      data: '2026-11-27',
+      categoria: 'xpto-inexistente',
+      destino: 'Casa',
+      confianca: 'media',
+    })
+
+    const res = await POST(webhookReq(upsert('gastei 50 de xpto na Casa')))
+
+    expect(res.status).toBe(200)
+    expect(lancServiceMock.createTransactionService).not.toHaveBeenCalled()
+    // persiste pendência ask_categoria com o destino já resolvido no partial
+    expect(serviceMock.upsertPendingAction).toHaveBeenCalledTimes(1)
+    const arg = serviceMock.upsertPendingAction.mock.calls[0][0]
+    expect(arg.kind).toBe('ask_categoria')
+    expect(arg.partial).toMatchObject({ valorCents: 5000, destino: 'Casa' })
+    // a pergunta oferece as categorias EXISTENTES daquele destino (Casa → "Gasolina")
+    expect(evolutionMock.sendText).toHaveBeenCalledTimes(1)
+    const [, text] = evolutionMock.sendText.mock.calls[0]
+    expect(text).toContain('Gasolina')
+  })
+
+  it('pendência ask_categoria viva + resposta "Gasolina" → lança e limpa a pendência', async () => {
+    serviceMock.findPendingAction.mockResolvedValue({
+      id: 'p2',
+      phone: PHONE,
+      kind: 'ask_categoria',
+      // destino já resolvido antes (Casa); só falta a categoria
+      partial: { tipo: 'SAIDA', valorCents: 5000, data: '2026-11-27', destino: 'Casa' },
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    })
+
+    const res = await POST(webhookReq(upsert('Gasolina')))
+
+    expect(res.status).toBe(200)
+    expect(aiMock.extractLancamento).not.toHaveBeenCalled()
+    expect(lancServiceMock.createTransactionService).toHaveBeenCalledTimes(1)
+    const arg = lancServiceMock.createTransactionService.mock.calls[0][0]
+    expect(arg.empresaId).toBeNull()
+    expect(arg.categoryId).toBe(CAT_CASA_GAS.id)
+    expect(serviceMock.clearPendingAction).toHaveBeenCalledWith(PHONE)
+    expect(evolutionMock.sendText).toHaveBeenCalledTimes(1)
+  })
+
+  it('TTL: pendência expirada é ignorada (findPendingAction → null) → trata como nova extração', async () => {
+    // findPendingAction já filtra por expiresAt > now; expirada volta null.
+    serviceMock.findPendingAction.mockResolvedValue(null)
+    aiMock.extractLancamento.mockResolvedValue({
+      intent: 'lancar',
+      tipo: 'SAIDA',
+      valorCents: 5000,
+      data: '2026-11-27',
+      categoria: 'Gasolina',
+      destino: 'Casa',
+      confianca: 'alta',
+    })
+
+    const res = await POST(webhookReq(upsert('gastei 50 de gasolina na Casa')))
+
+    expect(res.status).toBe(200)
+    // nova extração: a IA É chamada (não tratada como resposta de pendência)
+    expect(aiMock.extractLancamento).toHaveBeenCalledTimes(1)
+    expect(lancServiceMock.createTransactionService).toHaveBeenCalledTimes(1)
   })
 })
