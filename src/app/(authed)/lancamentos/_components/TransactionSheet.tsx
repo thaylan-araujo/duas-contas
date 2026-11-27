@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -47,6 +48,8 @@ interface ExistingTransaction {
   categoryId: string
   notes?: string | null
   pairId: string | null
+  status?: 'PAGO' | 'EM_ABERTO'
+  dueDate?: Date | null
 }
 
 interface TransactionSheetProps {
@@ -153,6 +156,8 @@ export function TransactionSheet({
           empresaId: transaction.empresaId,
           categoryId: transaction.categoryId,
           notes: transaction.notes ?? '',
+          status: transaction.status ?? 'PAGO',
+          dueDate: transaction.dueDate ? formatDateInput(transaction.dueDate) : '',
         })
       } else {
         reset({
@@ -163,6 +168,8 @@ export function TransactionSheet({
           empresaId: empresaIdContexto,
           categoryId: '',
           notes: '',
+          status: 'PAGO',
+          dueDate: '',
         })
       }
     }
@@ -171,6 +178,7 @@ export function TransactionSheet({
   const watchedType = watch('type')
   const watchedAmountCents = watch('amountCents')
   const watchedCategoryId = watch('categoryId')
+  const watchedStatus = watch('status') ?? 'PAGO'
 
   // Filter categories by the active context (empresaId null = Casa).
   const filteredCategories = categories.filter(
@@ -358,6 +366,7 @@ export function TransactionSheet({
     register,
     errors,
     watchedCategoryId,
+    watchedStatus,
     filteredCategories,
     amountPreview,
     setValue,
@@ -426,6 +435,7 @@ interface SheetFormContentProps {
     typeof useForm<TransactionFormInput, unknown, TransactionFormData>
   >['formState']['errors']
   watchedCategoryId: string
+  watchedStatus: 'PAGO' | 'EM_ABERTO'
   filteredCategories: Category[]
   amountPreview: string | null
   setValue: ReturnType<
@@ -457,6 +467,7 @@ function SheetFormContent({
   register,
   errors,
   watchedCategoryId,
+  watchedStatus,
   filteredCategories,
   amountPreview,
   setValue,
@@ -524,6 +535,62 @@ function SheetFormContent({
           <p className="text-sm text-destructive" role="alert">{errors.date.message}</p>
         )}
       </div>
+
+      {/* Status (pago / em aberto) + Vencimento (C1) — ocultos no pró-labore
+          (par atômico sempre efetivado como PAGO; não ganha status). Default
+          desligado = PAGO (lançamento comum já aconteceu). */}
+      {!isProLabore && (
+        <>
+          <div className="flex items-center justify-between min-h-[44px]">
+            <Label
+              htmlFor="status-toggle"
+              className="text-sm font-medium text-text-primary"
+            >
+              Deixar em aberto (a pagar)
+            </Label>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <span className="inline-flex min-h-[44px] items-center">
+                  <Switch
+                    id="status-toggle"
+                    checked={field.value === 'EM_ABERTO'}
+                    onCheckedChange={(checked) =>
+                      setValue('status', checked ? 'EM_ABERTO' : 'PAGO', {
+                        shouldValidate: true,
+                      })
+                    }
+                  />
+                </span>
+              )}
+            />
+          </div>
+
+          {/* Vencimento — visível só quando "em aberto" */}
+          {watchedStatus === 'EM_ABERTO' && (
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="dueDate"
+                className="text-sm font-medium text-text-primary"
+              >
+                Vencimento (opcional)
+              </Label>
+              <Input
+                id="dueDate"
+                type="date"
+                className="min-h-[44px]"
+                {...register('dueDate')}
+              />
+              {errors.dueDate && (
+                <p className="text-sm text-destructive" role="alert">
+                  {errors.dueDate.message}
+                </p>
+              )}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Descrição — hidden in pró-labore mode (description is fixed "Pró-labore") */}
       {!isProLabore && (
