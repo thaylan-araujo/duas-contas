@@ -5,7 +5,7 @@ import {
   getWeeklySpending,
   getRendaPorOrigem,
   getEmAbertoCasa,
-  getContasFixasTransacoesMes,
+  getContasFixasLancamentosMes,
 } from './service'
 import { getFixedAccounts } from '@/app/(authed)/contas-fixas/_lib/service'
 import { computeRestanteMes } from '@/app/(authed)/planejamento/_lib/acompanhamento'
@@ -60,13 +60,15 @@ export async function loadDashboardData(
 
   // Hero "posso gastar ainda" (10-01, R-1/R-2): só no contexto Casa. EM_ABERTO é
   // Casa-SAIDA-only — no contexto empresa não lemos em aberto e os campos ficam 0.
-  // No mesmo ramo Casa carregamos as contas fixas + suas Transactions do mês para
-  // o bloco "Contas fixas" (10-02) e a matemática correta dos chips (WARNING 4).
+  // No mesmo ramo Casa carregamos os lançamentos da categoria "Contas fixas" do
+  // mês para o bloco (UAT Fase 10: inclui fixas geradas E avulsos digitados à mão)
+  // e a matemática correta dos chips (WARNING 4). As fixas cadastradas são lidas só
+  // para decidir se mostramos o botão "gerar contas do mês".
   const [emAbertoLinhas, fixedAccounts, contasFixasTx] = isCasa
     ? await Promise.all([
         getEmAbertoCasa(userId, month),
         getFixedAccounts(userId),
-        getContasFixasTransacoesMes(userId, month),
+        getContasFixasLancamentosMes(userId, month),
       ])
     : [[] as EmAbertoLinha[], [], []]
 
@@ -91,11 +93,14 @@ export async function loadDashboardData(
         variavelCents: totalSpentCents,
       }
 
-  // Linhas do bloco "Contas fixas" (uma por conta fixa, com a Transaction do mês
-  // quando gerada). Só faz sentido no contexto Casa.
+  // Linhas do bloco "Contas fixas" (UAT Fase 10): uma por lançamento da categoria
+  // "Contas fixas" do mês — fixa gerada OU avulso. Só faz sentido no contexto Casa.
   const contasFixasLinhas: LinhaContaFixa[] = isCasa
-    ? montarLinhasContasFixas(fixedAccounts, contasFixasTx)
+    ? montarLinhasContasFixas(contasFixasTx)
     : []
+
+  // O botão "gerar contas do mês" só é útil quando o usuário tem fixas cadastradas.
+  const temFixasCadastradas = isCasa && fixedAccounts.length > 0
 
   return {
     dinheiroMesCents,
@@ -109,8 +114,9 @@ export async function loadDashboardData(
     contasFixasCents: chips.contasFixasCents,
     jaPagoCents: chips.jaPagoCents,
     variavelCents: chips.variavelCents,
-    // Bloco "Contas fixas" (10-02).
+    // Bloco "Contas fixas" (10-02 / UAT Fase 10).
     contasFixasLinhas,
+    temFixasCadastradas,
   }
 }
 

@@ -49,6 +49,7 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       variavelCents,
       jaPagoCents,
       contasFixasLinhas,
+      temFixasCadastradas,
     },
     rendaFamiliar,
     acompanhamento,
@@ -82,7 +83,11 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
 
       {/* Bloco "Contas fixas" (10-02) — logo após o hero, só na Casa. */}
       {isCasa && (
-        <ContasFixasBloco month={currentMonth} linhas={contasFixasLinhas} />
+        <ContasFixasBloco
+          month={currentMonth}
+          linhas={contasFixasLinhas}
+          temFixasCadastradas={temFixasCadastradas}
+        />
       )}
 
       {/* C6 — bloco "variável da semana com teto" (Fase 3.5) REUSADO inalterado,

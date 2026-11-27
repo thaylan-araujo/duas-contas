@@ -262,10 +262,10 @@ export async function getEmAbertoCasa(
   }))
 }
 
-/** Uma Transaction de conta fixa gerada no mês (para o bloco e os chips). */
-export interface ContaFixaTransacaoMes {
+/** Um lançamento Casa da categoria "Contas fixas" no mês (bloco + chips). */
+export interface ContaFixaLancamentoMes {
   id: string
-  fixedAccountId: string
+  descricao: string
   status: 'PAGO' | 'EM_ABERTO'
   amountCents: number
   estimatedCents: number | null
@@ -274,16 +274,23 @@ export interface ContaFixaTransacaoMes {
 }
 
 /**
- * Lê TODAS as Transactions da Casa do mês ligadas a uma fixa (fixedAccountId !=
- * null), com o status/valor/vencimento + o isVariableAmount da fixa. Alimenta o
+ * Lê TODOS os lançamentos Casa-SAIDA (empresaId null) do mês cuja CATEGORIA é
+ * "Contas fixas" — centrado em transação (UAT Fase 10): inclui tanto as fixas
+ * geradas (fixedAccountId != null) quanto as digitadas à mão (fixedAccountId
+ * null). Traz status/valor/vencimento + descrição (rótulo da linha) e o
+ * isVariableAmount da fixa vinculada quando houver (avulso → false). Alimenta o
  * bloco "Contas fixas" e a matemática dos chips do hero (WARNING 4). Escopado por
  * userId (IDOR). Reusa a janela de mês. NOTA: não filtra por status — traz PAGO e
  * EM_ABERTO (o bloco mostra os dois; os chips filtram por status na função pura).
+ *
+ * O match de categoria é pelo nome exato "Contas fixas" (categoria padrão da Casa
+ * — CONTAS_FIXAS_CATEGORIA), escopado a empresaId null para não colidir com
+ * categorias homônimas de empresa.
  */
-export async function getContasFixasTransacoesMes(
+export async function getContasFixasLancamentosMes(
   userId: string,
   month: string
-): Promise<ContaFixaTransacaoMes[]> {
+): Promise<ContaFixaLancamentoMes[]> {
   if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
   const [year, monthNum] = month.split('-').map(Number)
   const start = new Date(year, monthNum - 1, 1)
@@ -294,12 +301,12 @@ export async function getContasFixasTransacoesMes(
       userId,
       empresaId: null, // Casa
       type: 'SAIDA',
-      fixedAccountId: { not: null },
+      category: { is: { name: 'Contas fixas', empresaId: null } },
       date: { gte: start, lte: end },
     },
     select: {
       id: true,
-      fixedAccountId: true,
+      description: true,
       status: true,
       amountCents: true,
       estimatedCents: true,
@@ -311,7 +318,7 @@ export async function getContasFixasTransacoesMes(
 
   return rows.map((r) => ({
     id: r.id,
-    fixedAccountId: r.fixedAccountId as string,
+    descricao: r.description,
     status: r.status,
     amountCents: r.amountCents,
     estimatedCents: r.estimatedCents,

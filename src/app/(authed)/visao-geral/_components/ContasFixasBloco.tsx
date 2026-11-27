@@ -1,8 +1,10 @@
 'use client'
 // src/app/(authed)/visao-geral/_components/ContasFixasBloco.tsx
-// Bloco "Contas fixas" da Casa (C6/UI-SPEC §2): cabeçalho + resumo, botão "gerar
-// contas do mês" (idempotente), linhas com vencimento/valor-ou-"a definir"/pílula
-// de status/"marcar pago". Estados vazios cobertos. Toda formatação via format.ts.
+// Bloco "Contas fixas" da Casa (C6/UI-SPEC §2 + UAT Fase 10): mostra TODO
+// lançamento Casa-SAIDA do mês na categoria "Contas fixas" — gerado de uma fixa
+// OU digitado à mão — com vencimento/valor-ou-"a definir"/pílula de status/"marcar
+// pago". Botão "gerar contas do mês" (idempotente) quando há fixas cadastradas.
+// Estados vazios cobertos. Toda formatação via format.ts.
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { formatBRL, formatDate } from '@/lib/format'
@@ -14,9 +16,15 @@ import type { LinhaContaFixa } from '../_lib/contas-fixas-bloco'
 interface ContasFixasBlocoProps {
   month: string
   linhas: LinhaContaFixa[]
+  /** Há fixas cadastradas? Controla a exibição do botão "gerar contas do mês". */
+  temFixasCadastradas: boolean
 }
 
-export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
+export function ContasFixasBloco({
+  month,
+  linhas,
+  temFixasCadastradas,
+}: ContasFixasBlocoProps) {
   const [isGerando, startGerar] = useTransition()
   const [gerarErro, setGerarErro] = useState('')
   const [marcando, setMarcando] = useState<LinhaContaFixa | null>(null)
@@ -48,15 +56,17 @@ export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
             {formatBRL(totalCents)} · {emAberto.length} em aberto
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleGerar}
-          disabled={isGerando}
-          aria-busy={isGerando}
-          className="min-h-[44px]"
-        >
-          {isGerando ? 'Gerando…' : 'Gerar contas do mês'}
-        </Button>
+        {temFixasCadastradas && (
+          <Button
+            variant="outline"
+            onClick={handleGerar}
+            disabled={isGerando}
+            aria-busy={isGerando}
+            className="min-h-[44px]"
+          >
+            {isGerando ? 'Gerando…' : 'Gerar contas do mês'}
+          </Button>
+        )}
       </div>
 
       {gerarErro && (
@@ -65,13 +75,13 @@ export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
 
       {linhas.length === 0 ? (
         <p className="text-sm text-text-secondary">
-          Nenhuma conta fixa cadastrada. Cadastre em{' '}
-          <a href="/contas-fixas" className="font-medium text-casa underline">
-            Contas fixas
-          </a>
-          .
+          Nenhuma conta fixa neste mês. Lance uma despesa na categoria{' '}
+          <span className="font-medium">Contas fixas</span>
+          {temFixasCadastradas
+            ? ' ou use "Gerar contas do mês" para trazer as suas contas fixas cadastradas.'
+            : '.'}
         </p>
-      ) : emAberto.length === 0 && linhas.every((l) => l.status !== null) ? (
+      ) : emAberto.length === 0 ? (
         <p className="text-sm text-positive">Tudo pago ✓</p>
       ) : null}
 
@@ -79,7 +89,7 @@ export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
         <ul className="divide-y divide-border">
           {linhas.map((l) => (
             <li
-              key={l.fixedAccountId}
+              key={l.transacaoId}
               className="flex flex-wrap items-center justify-between gap-3 py-3"
             >
               <div className="min-w-0">
@@ -87,15 +97,13 @@ export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
                   {l.nome}
                 </p>
                 <p className="text-xs text-text-secondary">
-                  {l.dueDate ? `Vence ${formatDate(l.dueDate)}` : 'Não gerada'}
+                  {l.dueDate ? `Vence ${formatDate(l.dueDate)}` : 'Sem vencimento'}
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="text-right">
-                  {l.status === null ? (
-                    <span className="text-sm text-text-secondary">—</span>
-                  ) : l.isVariableAmount && l.status === 'EM_ABERTO' ? (
+                  {l.isVariableAmount && l.status === 'EM_ABERTO' ? (
                     <div>
                       <span className="block text-sm font-mono text-text-primary">
                         a definir
@@ -113,9 +121,9 @@ export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
                   )}
                 </div>
 
-                {l.status !== null && <StatusPill status={l.status} />}
+                <StatusPill status={l.status} />
 
-                {l.status === 'EM_ABERTO' && l.transacaoId && (
+                {l.status === 'EM_ABERTO' && (
                   <Button
                     variant="ghost"
                     onClick={() => setMarcando(l)}
@@ -130,7 +138,7 @@ export function ContasFixasBloco({ month, linhas }: ContasFixasBlocoProps) {
         </ul>
       )}
 
-      {marcando && marcando.transacaoId && (
+      {marcando && (
         <MarcarPagoDialog
           open={!!marcando}
           onClose={() => setMarcando(null)}

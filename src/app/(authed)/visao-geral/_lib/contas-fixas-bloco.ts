@@ -1,87 +1,71 @@
 // src/app/(authed)/visao-geral/_lib/contas-fixas-bloco.ts
-// Funções PURAS (sem Prisma) do bloco "Contas fixas" da Casa: montagem das linhas
-// visíveis (uma por conta fixa, com a Transaction gerada quando existir) e a
+// Funções PURAS (sem Prisma) do bloco "Contas fixas" da Casa. O bloco é CENTRADO
+// EM TRANSAÇÃO (UAT Fase 10): uma linha por lançamento Casa-SAIDA do mês na
+// categoria "Contas fixas" — seja gerado de uma fixa OU digitado à mão. A
 // MATEMÁTICA DOS CHIPS do hero (WARNING 4 — nunca negativo, reconcilia com o
-// comprometido). Dinheiro = Int centavos.
+// comprometido) opera sobre essas mesmas transações. Dinheiro = Int centavos.
 
-/** Conta fixa cadastrada (shape mínimo p/ o bloco). */
-export interface FixaConta {
-  id: string
-  name: string
-  dueDay: number
-  amountCents: number
-  isVariableAmount: boolean
-}
-
-/** Transaction de fixa gerada no mês (shape mínimo p/ o bloco). */
+/**
+ * Transaction da categoria "Contas fixas" no mês (shape mínimo p/ o bloco).
+ * Pode ou não ter uma fixa vinculada: lançamentos avulsos têm
+ * `isVariableAmount = false` e tipicamente `estimatedCents = null`.
+ */
 export interface FixaTransacao {
   id: string
-  fixedAccountId: string
+  /** Rótulo da linha = description da transação (fixas geradas já carregam o nome). */
+  descricao: string
   status: 'PAGO' | 'EM_ABERTO'
   amountCents: number
   estimatedCents: number | null
   dueDate: Date | null
+  /** Da fixa vinculada (se houver); lançamento avulso → false. */
   isVariableAmount: boolean
 }
 
-/** Uma linha do bloco: a conta fixa + sua Transaction do mês (ou null se não gerada). */
+/** Uma linha do bloco: um lançamento da categoria "Contas fixas" do mês. */
 export interface LinhaContaFixa {
-  fixedAccountId: string
+  transacaoId: string
   nome: string
-  dueDay: number
   isVariableAmount: boolean
-  /** null = ainda não gerada neste mês (usuário não clicou "gerar contas do mês"). */
-  transacaoId: string | null
-  status: 'PAGO' | 'EM_ABERTO' | null
+  status: 'PAGO' | 'EM_ABERTO'
   amountCents: number
   estimatedCents: number | null
   dueDate: Date | null
 }
 
 /**
- * Monta as linhas do bloco: uma por conta fixa, casada com sua Transaction do mês
- * (via fixedAccountId). Sem Transaction → linha "não gerada" (status null). Ordena
- * em aberto primeiro por vencimento, depois pagas, depois não geradas — por dueDay.
+ * Monta as linhas do bloco: uma por lançamento da categoria "Contas fixas" do
+ * mês, usando a `descricao` da transação como rótulo. Ordena em aberto primeiro
+ * (por vencimento), depois pagas — ambos por dueDate (nulos ao fim).
  */
 export function montarLinhasContasFixas(
-  contas: FixaConta[],
   transacoes: FixaTransacao[]
 ): LinhaContaFixa[] {
-  const txPorFixa = new Map(transacoes.map((t) => [t.fixedAccountId, t]))
+  const linhas: LinhaContaFixa[] = transacoes.map((t) => ({
+    transacaoId: t.id,
+    nome: t.descricao,
+    isVariableAmount: t.isVariableAmount,
+    status: t.status,
+    amountCents: t.amountCents,
+    estimatedCents: t.estimatedCents,
+    dueDate: t.dueDate,
+  }))
 
-  const linhas: LinhaContaFixa[] = contas.map((c) => {
-    const tx = txPorFixa.get(c.id)
-    return {
-      fixedAccountId: c.id,
-      nome: c.name,
-      dueDay: c.dueDay,
-      isVariableAmount: c.isVariableAmount,
-      transacaoId: tx?.id ?? null,
-      status: tx?.status ?? null,
-      amountCents: tx?.amountCents ?? c.amountCents,
-      estimatedCents: tx?.estimatedCents ?? null,
-      dueDate: tx?.dueDate ?? null,
-    }
-  })
-
-  const rank = (l: LinhaContaFixa): number => {
-    if (l.status === 'EM_ABERTO') return 0
-    if (l.status === 'PAGO') return 1
-    return 2 // não gerada
-  }
+  const rank = (l: LinhaContaFixa): number => (l.status === 'EM_ABERTO' ? 0 : 1)
 
   return linhas.sort((a, b) => {
     const r = rank(a) - rank(b)
     if (r !== 0) return r
-    const da = a.dueDate ? a.dueDate.getTime() : a.dueDay
-    const db = b.dueDate ? b.dueDate.getTime() : b.dueDay
+    // dueDate asc, nulos ao fim.
+    const da = a.dueDate ? a.dueDate.getTime() : Number.POSITIVE_INFINITY
+    const db = b.dueDate ? b.dueDate.getTime() : Number.POSITIVE_INFINITY
     return da - db
   })
 }
 
 /**
  * Matemática dos chips do hero (WARNING 4). A partir do gasto real PAGO total da
- * Casa (`totalSpentPago`) e das Transactions de fixas do mês:
+ * Casa (`totalSpentPago`) e das Transactions da categoria "Contas fixas" do mês:
  * - `fixasPagasCents` = Σ amountCents das fixas PAGO (valor REAL pago).
  * - `contasFixasCents` (chip "Contas fixas") = contribuição das fixas ao
  *   comprometido: PAGO usa amountCents; EM_ABERTO usa estimatedCents quando "a
