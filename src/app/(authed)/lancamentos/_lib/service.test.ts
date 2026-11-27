@@ -44,9 +44,11 @@ vi.mock('@/lib/prisma', () => ({
 
 import {
   createProLaboreService,
+  createTransactionService,
   updateTransactionService,
   deleteTransactionService,
 } from './service'
+import { transactionSchema } from './schema'
 
 const USER = 'user-1'
 const EMPRESA = 'emp-1'
@@ -205,6 +207,116 @@ describe('createProLaboreService (PL-01 — par atômico multi-empresa)', () => 
     prismaMock.empresa.findFirst.mockResolvedValueOnce(null)
     await expect(createProLaboreService(input)).rejects.toThrow()
     expect(prismaMock.transaction.create).not.toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Fatia 03 (C1) — despesa avulsa também pode ser EM_ABERTO com vencimento.
+// O transactionSchema ganha status (default PAGO) + dueDate opcional, e o
+// createTransactionService/updateTransactionService persistem esses campos
+// (parseISO no dueDate quando presente), REUSANDO as funções existentes.
+// ---------------------------------------------------------------------------
+describe('transactionSchema — status + dueDate (C1)', () => {
+  const base = {
+    date: '2026-11-15',
+    description: 'Parcela do celular',
+    amountCents: 50000,
+    type: 'SAIDA' as const,
+    empresaId: null,
+    categoryId: 'cat-1',
+  }
+
+  it('status tem default PAGO quando omitido (lançamento comum já aconteceu)', () => {
+    const parsed = transactionSchema.parse(base)
+    expect(parsed.status).toBe('PAGO')
+  })
+
+  it('aceita status EM_ABERTO', () => {
+    const parsed = transactionSchema.parse({ ...base, status: 'EM_ABERTO' })
+    expect(parsed.status).toBe('EM_ABERTO')
+  })
+
+  it('rejeita status fora do enum (T-10-10 tampering)', () => {
+    const result = transactionSchema.safeParse({ ...base, status: 'QUITADO' })
+    expect(result.success).toBe(false)
+  })
+
+  it('dueDate é opcional (string vazia = sem vencimento)', () => {
+    expect(transactionSchema.safeParse(base).success).toBe(true)
+    expect(transactionSchema.safeParse({ ...base, dueDate: '' }).success).toBe(true)
+    expect(
+      transactionSchema.safeParse({ ...base, dueDate: '2026-12-10' }).success
+    ).toBe(true)
+  })
+})
+
+describe('createTransactionService — status + dueDate (C1, REUSO)', () => {
+  const base = {
+    userId: USER,
+    date: '2026-11-15',
+    description: 'Parcela do celular',
+    amountCents: 50000,
+    type: 'SAIDA' as const,
+    empresaId: null,
+    categoryId: 'cat-1',
+    notes: '',
+    status: 'PAGO' as const,
+  }
+
+  it('persiste status via ...rest e date via parseISO', async () => {
+    await createTransactionService(base)
+    const data = prismaMock.transaction.create.mock.calls[0][0].data
+    expect(data.status).toBe('PAGO')
+    expect(data.userId).toBe(USER)
+    expect(data.date).toBeInstanceOf(Date)
+  })
+
+  it('EM_ABERTO com dueDate grava status + dueDate (parseISO)', async () => {
+    await createTransactionService({
+      ...base,
+      status: 'EM_ABERTO',
+      dueDate: '2026-12-10',
+    })
+    const data = prismaMock.transaction.create.mock.calls[0][0].data
+    expect(data.status).toBe('EM_ABERTO')
+    expect(data.dueDate).toBeInstanceOf(Date)
+    expect((data.dueDate as Date).toISOString().slice(0, 10)).toBe('2026-12-10')
+  })
+
+  it('dueDate vazio não grava dueDate (sem injeção de data inválida)', async () => {
+    await createTransactionService({ ...base, dueDate: '' })
+    const data = prismaMock.transaction.create.mock.calls[0][0].data
+    expect(data.dueDate).toBeUndefined()
+  })
+})
+
+describe('updateTransactionService — dueDate condicional (C1, REUSO)', () => {
+  beforeEach(() => {
+    // Lançamento avulso sem par (pairId null) → editável.
+    prismaMock.transaction.findFirst.mockResolvedValue({
+      id: 'tx-1',
+      userId: USER,
+      pairId: null,
+    })
+    prismaMock.transaction.update.mockImplementation(
+      async (args: { data: Record<string, unknown> }) => ({ id: 'tx-1', ...args.data })
+    )
+  })
+
+  it('grava dueDate (parseISO) quando presente e status via ...rest', async () => {
+    await updateTransactionService('tx-1', USER, {
+      status: 'EM_ABERTO',
+      dueDate: '2026-12-10',
+    })
+    const data = prismaMock.transaction.update.mock.calls[0][0].data
+    expect(data.status).toBe('EM_ABERTO')
+    expect(data.dueDate).toBeInstanceOf(Date)
+  })
+
+  it('não grava dueDate quando vazio/ausente', async () => {
+    await updateTransactionService('tx-1', USER, { status: 'PAGO', dueDate: '' })
+    const data = prismaMock.transaction.update.mock.calls[0][0].data
+    expect(data.dueDate).toBeUndefined()
   })
 })
 
