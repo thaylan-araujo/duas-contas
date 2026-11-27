@@ -47,3 +47,57 @@ export async function dedupeInbound({
     throw error
   }
 }
+
+// --- Ação pendente (multi-turno) -----------------------------------------
+// O serverless é stateless (D-07): quando falta destino/categoria, guardamos a
+// extração PARCIAL no Postgres com TTL e a próxima mensagem do mesmo número
+// completa o lançamento. Uma pendência por número (`phone @unique`).
+
+/**
+ * Busca a ação pendente VIVA do número (`expiresAt > now`). O filtro `gt:now`
+ * garante que uma pendência expirada nunca é retornada — ela não pode
+ * "sequestrar" uma mensagem nova e solta (T-09-08); o chamador a trata como uma
+ * extração fresca. `now` é injetável para o teste ser determinístico.
+ */
+export async function findPendingAction(phone: string, now: Date = new Date()) {
+  return prisma.whatsappPendingAction.findFirst({
+    where: { phone, expiresAt: { gt: now } },
+  })
+}
+
+/**
+ * Grava/atualiza a ação pendente do número com a extração parcial e um TTL
+ * curto. `expiresAt = now + ttlMinutes`; `now` injetável (teste determinístico).
+ * Upsert por `phone` (@unique): sempre uma única pendência por número. Não
+ * logamos o `partial` — ele carrega dado financeiro parcial (T-09-09).
+ */
+export async function upsertPendingAction({
+  phone,
+  kind,
+  partial,
+  ttlMinutes,
+  now = new Date(),
+}: {
+  phone: string
+  kind: string
+  partial: unknown
+  ttlMinutes: number
+  now?: Date
+}) {
+  const expiresAt = new Date(now.getTime() + ttlMinutes * 60 * 1000)
+  const data = { kind, partial: partial as object, expiresAt }
+  return prisma.whatsappPendingAction.upsert({
+    where: { phone },
+    create: { phone, ...data },
+    update: data,
+  })
+}
+
+/**
+ * Remove a ação pendente do número — chamado quando o lançamento completa (ou
+ * para descartar uma pendência inválida). `deleteMany` é idempotente (não falha
+ * se não houver linha).
+ */
+export async function clearPendingAction(phone: string) {
+  return prisma.whatsappPendingAction.deleteMany({ where: { phone } })
+}
