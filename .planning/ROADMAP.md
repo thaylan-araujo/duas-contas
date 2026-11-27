@@ -19,7 +19,7 @@
 - [ ] **Phase 7: Importação CSV/OFX** - Upload de extrato com categorização automática
 - [ ] **Phase 8: PWA Polish** - Mobile refinado, lançamento rápido e instalação PWA
 - [ ] **Phase 9: Assistente de WhatsApp (IA)** — **PRIORIDADE ATUAL** — lançar e consultar pelo WhatsApp via Evolution API + IA (ver docs/superpowers/specs/2026-11-26-whatsapp-assistant-design.md)
-- [ ] **Phase 10: Pago e A Pagar (status de pagamento)** — backlog (depois da Fase 9) — status por lançamento: `pago` / `a pagar` (ou `a receber`) + data de vencimento; o que já saiu de verdade vs. o que ainda está pendente
+- [ ] **Phase 10: Pago e A Pagar (status de pagamento)** — construído 27/11/2026 (aguardando teste real) — status por lançamento `pago`/`em aberto` + vencimento; contas fixas entram em aberto todo mês; hero "posso gastar ainda" conta as fixas (ver docs/superpowers/specs/2026-11-27-casa-pago-a-pagar-design.md)
 
 ---
 
@@ -339,8 +339,8 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 — depende da migração)*
 
-- [ ] 10-02-PLAN.md — Fatia 2: toggle isVariableAmount + geração mensal idempotente das fixas em aberto + "marcar pago" + bloco Contas fixas com pílula de status (C2, C3, C6)
-- [ ] 10-03-PLAN.md — Fatia 3: toggle pago/em aberto + vencimento no formulário de lançamento (despesas avulsas) (C1)
+- [x] 10-02-PLAN.md — Fatia 2: toggle isVariableAmount + geração mensal idempotente das fixas em aberto + "marcar pago" + bloco Contas fixas com pílula de status (C2, C3, C6) — completo 2026-11-27
+- [x] 10-03-PLAN.md — Fatia 3: toggle pago/em aberto + vencimento no formulário de lançamento (despesas avulsas) (C1) — completo 2026-11-27
 
 ---
 
@@ -358,7 +358,7 @@ Plans:
 | 7. Importação CSV/OFX | 0/? | Not started | - |
 | 8. PWA Polish | 0/? | Not started | - |
 | 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
-| 10. Pago e A Pagar (status de pagamento) | 1/3 | **Em progresso — Fatia 1 (10-01) completa** | - |
+| 10. Pago e A Pagar (status de pagamento) | 3/3 | **Construído — aguardando teste real do usuário** | - |
 
 ---
 
