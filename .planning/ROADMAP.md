@@ -19,6 +19,7 @@
 - [ ] **Phase 7: Importação CSV/OFX** - Upload de extrato com categorização automática
 - [ ] **Phase 8: PWA Polish** - Mobile refinado, lançamento rápido e instalação PWA
 - [ ] **Phase 9: Assistente de WhatsApp (IA)** — **PRIORIDADE ATUAL** — lançar e consultar pelo WhatsApp via Evolution API + IA (ver docs/superpowers/specs/2026-11-26-whatsapp-assistant-design.md)
+- [ ] **Phase 10: Pago e A Pagar (status de pagamento)** — backlog (depois da Fase 9) — status por lançamento: `pago` / `a pagar` (ou `a receber`) + data de vencimento; o que já saiu de verdade vs. o que ainda está pendente
 
 ---
 
@@ -312,6 +313,17 @@ Plans:
 - [ ] 09-03-PLAN.md — Multi-turno (pergunta quando incerto + completa na próxima msg, C-2) + setup externo (env/instância Evolution/allowlist) + verificação ponta-a-ponta real
 **UI hint**: no (canal é o WhatsApp; sem telas novas — só setup/env)
 
+### Phase 10: Pago e A Pagar (status de pagamento)
+
+**Goal**: Cada lançamento (Casa e empresa) tem um status de pagamento — `pago` ou `a pagar`/`a receber` — com data de vencimento, para o usuário distinguir o que já saiu/entrou de verdade do que ainda está pendente, e ver quanto ainda falta pagar/receber no mês.
+**Mode:** mvp
+**Depends on**: Phase 2 (lançamentos); conversa direta com a Fase 5 (Calendário de vencimentos) e a projeção de caixa (um "a pagar" com vencimento é uma obrigação futura datada)
+**Status**: Backlog — capturado em 27/11/2026 a pedido do Thaylan; discutir/planejar depois de concluir a Fase 9 (WhatsApp)
+**Decisão de escopo (travada na captura)**: interpretação = **status por lançamento** (não uma lista separada de contas a pagar, nem só previsto×realizado). A pagar com vencimento alimenta o calendário e a projeção.
+**A definir no discuss**: como o status interage com contas fixas (FixedAccount) e com o "dinheiro do mês"/restante (um "a pagar" já conta no restante ou só quando pago?); filtros por status nas telas; reflexo no P&L da empresa (regime de caixa vs. competência); possível migração aditiva de campos `status` + `dueDate` em Transaction.
+
+**Plans**: TBD
+
 ---
 
 ## Progress
@@ -328,6 +340,7 @@ Plans:
 | 7. Importação CSV/OFX | 0/? | Not started | - |
 | 8. PWA Polish | 0/? | Not started | - |
 | 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
+| 10. Pago e A Pagar (status de pagamento) | 0/? | Backlog (depois da Fase 9) | - |
 
 ---
 
