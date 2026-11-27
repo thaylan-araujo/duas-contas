@@ -26,6 +26,15 @@ enum TransactionType {
   SAIDA
 }
 
+// Fase 10 — Pago e A Pagar. PAGO = já saiu/entrou de verdade (caixa);
+// EM_ABERTO = comprometido mas ainda não pago (conta sozinho no "posso gastar",
+// mas NÃO no gasto real/semanal/tetos — ver R-1). Default PAGO: tudo que já
+// existe e todo lançamento comum nasce como pago.
+enum TransactionStatus {
+  PAGO
+  EM_ABERTO
+}
+
 model User {
   id              String           @id
   categories      Category[]
@@ -105,6 +114,14 @@ model Transaction {
   // comuns que não são pró-labore marcado (ex.: "outras entradas" como salário).
   origemEmpresa   Empresa? @relation("OrigemEmpresa", fields: [origemEmpresaId], references: [id], onDelete: Restrict)
   origemEmpresaId String? // null = não é pró-labore marcado
+  // Fase 10 — Pago e A Pagar (aditivo).
+  status          TransactionStatus @default(PAGO)
+  dueDate         DateTime?         @db.Date // vencimento (null = sem vencimento)
+  estimatedCents  Int? // estimativa p/ "a definir" (luz/água em aberto sem valor)
+  // Conta fixa de origem do lançamento gerado (null = não veio de uma fixa).
+  // SetNull: apagar a fixa NÃO apaga o histórico de lançamentos já gerado (R-4).
+  fixedAccount    FixedAccount? @relation(fields: [fixedAccountId], references: [id], onDelete: SetNull)
+  fixedAccountId  String?
   user        User            @relation(fields: [userId], references: [id])
   userId      String
   origin      String          @default("manual")
@@ -114,6 +131,10 @@ model Transaction {
   updatedAt   DateTime        @updatedAt
 
   @@index([origemEmpresaId])
+  // Idempotência atômica da geração mensal: uma fixa gera no máximo uma linha por
+  // vencimento. Lançamentos sem fixa (fixedAccountId null) não colidem — o Postgres
+  // trata NULLs como distintos, então avulsos/pró-labore ficam livres.
+  @@unique([fixedAccountId, dueDate])
 }
 
 model MonthlyBudget {
@@ -157,6 +178,11 @@ model FixedAccount {
   dueDay      Int // 1..31
   amountCents Int
   autoDebit   Boolean  @default(false)
+  // Fase 10: luz/água têm valor que muda → a geração mensal nasce "a definir"
+  // (em aberto sem valor, usando estimativa do mês anterior só pro "posso gastar").
+  isVariableAmount Boolean @default(false)
+  // Lançamentos gerados a partir desta fixa (SetNull ao apagar — preserva histórico).
+  transactions Transaction[]
   createdAt   DateTime @default(now())
 }
 
