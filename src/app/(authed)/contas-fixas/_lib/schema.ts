@@ -13,6 +13,7 @@ export const fixedAccountSchema = z.object({
     .max(31, 'Informe um dia entre 1 e 31.'),
   amountCents: z.number().int().positive('Digite um valor maior que zero.'),
   autoDebit: z.boolean(),
+  isVariableAmount: z.boolean(),
 })
 
 export type FixedAccountFormData = z.infer<typeof fixedAccountSchema>

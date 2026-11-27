@@ -123,6 +123,7 @@ describe('fixedAccountSchema', () => {
     dueDay: 10,
     amountCents: 15_000,
     autoDebit: true,
+    isVariableAmount: false,
   }
 
   it('aceita uma conta fixa válida', () => {

@@ -27,6 +27,7 @@ export interface ExistingFixedAccount {
   dueDay: number
   amountCents: number
   autoDebit: boolean
+  isVariableAmount: boolean
 }
 
 interface FixedAccountSheetProps {
@@ -54,7 +55,13 @@ export function FixedAccountSheet({
     setError,
   } = useForm<FixedAccountFormData>({
     resolver: zodResolver(fixedAccountSchema),
-    defaultValues: { name: '', dueDay: 1, amountCents: 0, autoDebit: false },
+    defaultValues: {
+      name: '',
+      dueDay: 1,
+      amountCents: 0,
+      autoDebit: false,
+      isVariableAmount: false,
+    },
   })
 
   useEffect(() => {
@@ -65,14 +72,22 @@ export function FixedAccountSheet({
           dueDay: account.dueDay,
           amountCents: account.amountCents,
           autoDebit: account.autoDebit,
+          isVariableAmount: account.isVariableAmount,
         })
       } else {
-        reset({ name: '', dueDay: 1, amountCents: 0, autoDebit: false })
+        reset({
+          name: '',
+          dueDay: 1,
+          amountCents: 0,
+          autoDebit: false,
+          isVariableAmount: false,
+        })
       }
     }
   }, [open, account, reset])
 
   const watchedAmount = watch('amountCents')
+  const watchIsVariable = watch('isVariableAmount')
   const amountPreview = watchedAmount > 0 ? formatBRL(watchedAmount) : null
 
   function onSubmit(data: FixedAccountFormData) {
@@ -140,9 +155,33 @@ export function FixedAccountSheet({
         {amountPreview && (
           <p className="text-sm font-mono text-text-secondary">{amountPreview}</p>
         )}
+        {watchIsVariable && (
+          <p className="text-sm text-text-secondary">
+            Luz/água: o valor é definido ao marcar pago.
+          </p>
+        )}
         {errors.amountCents && (
           <p className="text-sm text-destructive" role="alert">{errors.amountCents.message}</p>
         )}
+      </div>
+
+      <div className="flex items-center justify-between min-h-[44px]">
+        <Label htmlFor="fa-isVariable" className="text-sm font-medium text-text-primary">
+          Valor variável (a definir)
+        </Label>
+        <Controller
+          name="isVariableAmount"
+          control={control}
+          render={({ field }) => (
+            <span className="inline-flex min-h-[44px] items-center">
+              <Switch
+                id="fa-isVariable"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </span>
+          )}
+        />
       </div>
 
       <div className="flex items-center justify-between min-h-[44px]">
