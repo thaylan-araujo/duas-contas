@@ -5,13 +5,20 @@ import {
   getWeeklySpending,
   getRendaPorOrigem,
   getEmAbertoCasa,
+  getContasFixasTransacoesMes,
 } from './service'
+import { getFixedAccounts } from '@/app/(authed)/contas-fixas/_lib/service'
 import { computeRestanteMes } from '@/app/(authed)/planejamento/_lib/acompanhamento'
 import {
   computeComprometido,
   computePossoGastar,
   type EmAbertoLinha,
 } from '@/app/(authed)/planejamento/_lib/comprometido'
+import {
+  montarLinhasContasFixas,
+  computeChipsContasFixas,
+  type LinhaContaFixa,
+} from './contas-fixas-bloco'
 import { getEmpresas } from '@/app/(authed)/empresas/_lib/loader'
 import {
   agruparRendaPorOrigem,
@@ -53,9 +60,15 @@ export async function loadDashboardData(
 
   // Hero "posso gastar ainda" (10-01, R-1/R-2): só no contexto Casa. EM_ABERTO é
   // Casa-SAIDA-only — no contexto empresa não lemos em aberto e os campos ficam 0.
-  const emAbertoLinhas: EmAbertoLinha[] = isCasa
-    ? await getEmAbertoCasa(userId, month)
-    : []
+  // No mesmo ramo Casa carregamos as contas fixas + suas Transactions do mês para
+  // o bloco "Contas fixas" (10-02) e a matemática correta dos chips (WARNING 4).
+  const [emAbertoLinhas, fixedAccounts, contasFixasTx] = isCasa
+    ? await Promise.all([
+        getEmAbertoCasa(userId, month),
+        getFixedAccounts(userId),
+        getContasFixasTransacoesMes(userId, month),
+      ])
+    : [[] as EmAbertoLinha[], [], []]
 
   // comprometido = gasto real PAGO (totalSpent) + em aberto (valor certo ou
   // estimativa). posso gastar = dinheiro do mês − comprometido (pode negativar).
@@ -64,12 +77,25 @@ export async function loadDashboardData(
     ? computePossoGastar(dinheiroMesCents, comprometidoCents)
     : 0
 
-  // Chips do hero (UI-SPEC §1): "Contas fixas" = parcela em aberto comprometida
-  // (comprometido − já pago); "Já pago" = gasto real PAGO; "Variável gasto" = o
-  // gasto PAGO (as fixas só entram no caixa real quando marcadas pagas).
-  const contasFixasCents = comprometidoCents - totalSpentCents
-  const jaPagoCents = totalSpentCents
-  const variavelCents = totalSpentCents
+  // Chips do hero (WARNING 4 — matemática real das fixas, não aproximação):
+  // Contas fixas = contribuição das fixas ao comprometido (PAGO=amountCents,
+  // EM_ABERTO=estimativa/valor); Já pago = totalSpent PAGO; Variável gasto =
+  // max(0, totalSpentPago − fixasPagas) (nunca negativo). No contexto empresa
+  // não há fixas → chips caem no gasto PAGO (comportamento 10-01 preservado).
+  const chips = isCasa
+    ? computeChipsContasFixas(totalSpentCents, contasFixasTx)
+    : {
+        fixasPagasCents: 0,
+        contasFixasCents: comprometidoCents - totalSpentCents,
+        jaPagoCents: totalSpentCents,
+        variavelCents: totalSpentCents,
+      }
+
+  // Linhas do bloco "Contas fixas" (uma por conta fixa, com a Transaction do mês
+  // quando gerada). Só faz sentido no contexto Casa.
+  const contasFixasLinhas: LinhaContaFixa[] = isCasa
+    ? montarLinhasContasFixas(fixedAccounts, contasFixasTx)
+    : []
 
   return {
     dinheiroMesCents,
@@ -80,9 +106,11 @@ export async function loadDashboardData(
     // Hero (Casa). No contexto empresa comprometido = totalSpent e possoGastar = 0.
     comprometidoCents,
     possoGastarCents,
-    contasFixasCents,
-    jaPagoCents,
-    variavelCents,
+    contasFixasCents: chips.contasFixasCents,
+    jaPagoCents: chips.jaPagoCents,
+    variavelCents: chips.variavelCents,
+    // Bloco "Contas fixas" (10-02).
+    contasFixasLinhas,
   }
 }
 

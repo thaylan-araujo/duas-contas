@@ -261,3 +261,61 @@ export async function getEmAbertoCasa(
     isVariableAmount: r.fixedAccount?.isVariableAmount ?? false,
   }))
 }
+
+/** Uma Transaction de conta fixa gerada no mês (para o bloco e os chips). */
+export interface ContaFixaTransacaoMes {
+  id: string
+  fixedAccountId: string
+  status: 'PAGO' | 'EM_ABERTO'
+  amountCents: number
+  estimatedCents: number | null
+  dueDate: Date | null
+  isVariableAmount: boolean
+}
+
+/**
+ * Lê TODAS as Transactions da Casa do mês ligadas a uma fixa (fixedAccountId !=
+ * null), com o status/valor/vencimento + o isVariableAmount da fixa. Alimenta o
+ * bloco "Contas fixas" e a matemática dos chips do hero (WARNING 4). Escopado por
+ * userId (IDOR). Reusa a janela de mês. NOTA: não filtra por status — traz PAGO e
+ * EM_ABERTO (o bloco mostra os dois; os chips filtram por status na função pura).
+ */
+export async function getContasFixasTransacoesMes(
+  userId: string,
+  month: string
+): Promise<ContaFixaTransacaoMes[]> {
+  if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
+  const [year, monthNum] = month.split('-').map(Number)
+  const start = new Date(year, monthNum - 1, 1)
+  const end = new Date(year, monthNum, 0, 23, 59, 59, 999)
+
+  const rows = await prisma.transaction.findMany({
+    where: {
+      userId,
+      empresaId: null, // Casa
+      type: 'SAIDA',
+      fixedAccountId: { not: null },
+      date: { gte: start, lte: end },
+    },
+    select: {
+      id: true,
+      fixedAccountId: true,
+      status: true,
+      amountCents: true,
+      estimatedCents: true,
+      dueDate: true,
+      fixedAccount: { select: { isVariableAmount: true } },
+    },
+    orderBy: { dueDate: 'asc' },
+  })
+
+  return rows.map((r) => ({
+    id: r.id,
+    fixedAccountId: r.fixedAccountId as string,
+    status: r.status,
+    amountCents: r.amountCents,
+    estimatedCents: r.estimatedCents,
+    dueDate: r.dueDate,
+    isVariableAmount: r.fixedAccount?.isVariableAmount ?? false,
+  }))
+}

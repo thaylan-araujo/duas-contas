@@ -2,10 +2,16 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { loadDashboardData, loadRendaFamiliar } from './_lib/loader'
 import { DashboardCards } from './_components/DashboardCards'
 import { HeroPossoGastar } from './_components/HeroPossoGastar'
+import { ContasFixasBloco } from './_components/ContasFixasBloco'
 import { CategorySpendingBars } from './_components/CategorySpendingBars'
 import { WeeklyBarChart } from './_components/WeeklyBarChart'
 import { RendaFamiliarPorOrigem } from './_components/RendaFamiliarPorOrigem'
 import type { LinhaRendaPorOrigem } from './_lib/renda-familiar'
+// C6 — bloco "variável da semana com teto" (Fase 3.5) REUSADO INALTERADO.
+import { loadAcompanhamentoData } from '@/app/(authed)/planejamento/_lib/loader'
+import { CategoriaTetoList } from '@/app/(authed)/planejamento/_components/CategoriaTetoList'
+import { GastoSemanalAuto } from '@/app/(authed)/planejamento/_components/GastoSemanalAuto'
+import type { AcompanhamentoData } from '@/app/(authed)/planejamento/_lib/loader'
 
 interface PageProps {
   searchParams: Promise<{ month?: string; empresaId?: string }>
@@ -42,13 +48,19 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       contasFixasCents,
       variavelCents,
       jaPagoCents,
+      contasFixasLinhas,
     },
     rendaFamiliar,
+    acompanhamento,
   ] = await Promise.all([
     loadDashboardData(userId, currentMonth, empresaIdContexto),
     isCasa
       ? loadRendaFamiliar(userId, currentMonth)
       : Promise.resolve<LinhaRendaPorOrigem[]>([]),
+    // C6: dados do bloco "variável da semana com teto" (Fase 3.5) — só na Casa.
+    isCasa
+      ? loadAcompanhamentoData(userId, currentMonth)
+      : Promise.resolve<AcompanhamentoData | null>(null),
   ])
 
   return (
@@ -66,6 +78,23 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
           variavelCents={variavelCents}
           jaPagoCents={jaPagoCents}
         />
+      )}
+
+      {/* Bloco "Contas fixas" (10-02) — logo após o hero, só na Casa. */}
+      {isCasa && (
+        <ContasFixasBloco month={currentMonth} linhas={contasFixasLinhas} />
+      )}
+
+      {/* C6 — bloco "variável da semana com teto" (Fase 3.5) REUSADO inalterado,
+          junto do hero + contas-fixas. Conta só o PAGO (R-1). */}
+      {isCasa && acompanhamento && (
+        <>
+          <CategoriaTetoList
+            month={currentMonth}
+            categorias={acompanhamento.categorias}
+          />
+          <GastoSemanalAuto semanas={acompanhamento.semanas} />
+        </>
       )}
 
       <DashboardCards
