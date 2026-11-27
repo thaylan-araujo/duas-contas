@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { loadDashboardData, loadRendaFamiliar } from './_lib/loader'
 import { DashboardCards } from './_components/DashboardCards'
+import { HeroPossoGastar } from './_components/HeroPossoGastar'
 import { CategorySpendingBars } from './_components/CategorySpendingBars'
 import { WeeklyBarChart } from './_components/WeeklyBarChart'
 import { RendaFamiliarPorOrigem } from './_components/RendaFamiliarPorOrigem'
@@ -36,6 +37,11 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       restanteCents,
       categorySpending,
       weeklySpending,
+      comprometidoCents,
+      possoGastarCents,
+      contasFixasCents,
+      variavelCents,
+      jaPagoCents,
     },
     rendaFamiliar,
   ] = await Promise.all([
@@ -50,6 +56,17 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-semibold text-text-primary">Visão Geral</h1>
       </div>
+
+      {isCasa && (
+        <HeroPossoGastar
+          possoGastarCents={possoGastarCents}
+          comprometidoCents={comprometidoCents}
+          dinheiroMesCents={dinheiroMesCents}
+          contasFixasCents={contasFixasCents}
+          variavelCents={variavelCents}
+          jaPagoCents={jaPagoCents}
+        />
+      )}
 
       <DashboardCards
         dinheiroMesCents={dinheiroMesCents}

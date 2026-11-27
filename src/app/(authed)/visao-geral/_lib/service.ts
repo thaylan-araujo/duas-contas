@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { weekIndexForDay } from '@/lib/weeks'
+import type { EmAbertoLinha } from '@/app/(authed)/planejamento/_lib/comprometido'
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -66,6 +67,7 @@ export async function getTotalSpent(
       userId,
       empresaId, // null = Casa; id = empresa ativa
       type: 'SAIDA',
+      status: 'PAGO', // R-1: gasto real conta só o que foi pago (EM_ABERTO só no hero)
       date: { gte: start, lte: end },
     },
   })
@@ -155,6 +157,7 @@ export async function getCategorySpending(
       userId,
       empresaId, // null = Casa; id = empresa ativa
       type: 'SAIDA',
+      status: 'PAGO', // R-1: tetos/categoria contam só o que foi pago
       date: { gte: start, lte: end },
     },
     _sum: { amountCents: true },
@@ -198,6 +201,7 @@ export async function getWeeklySpending(
       userId,
       empresaId, // null = Casa; id = empresa ativa
       type: 'SAIDA',
+      status: 'PAGO', // R-1: semanal conta só o que foi pago
       date: { gte: start, lte: end },
     },
     select: { date: true, amountCents: true },
@@ -217,4 +221,43 @@ export async function getWeeklySpending(
   }
 
   return buckets
+}
+
+/**
+ * Lê as linhas SAIDA EM_ABERTO da Casa (empresaId null) do mês — a parcela que o
+ * hero "posso gastar ainda" desconta além do gasto real (R-1: EM_ABERTO só entra
+ * aqui, nunca em getTotalSpent/getCategorySpending/getWeeklySpending). Devolve no
+ * shape `EmAbertoLinha` que a função pura `computeComprometido` consome:
+ * `isVariableAmount` vem da fixa vinculada (null → false). Sempre escopado por
+ * userId (IDOR — T-10-05). Reusa a mesma janela de mês dos outros leitores.
+ */
+export async function getEmAbertoCasa(
+  userId: string,
+  month: string
+): Promise<EmAbertoLinha[]> {
+  if (!monthRegex.test(month)) throw new Error('Formato de mês inválido')
+  const [year, monthNum] = month.split('-').map(Number)
+  const start = new Date(year, monthNum - 1, 1)
+  const end = new Date(year, monthNum, 0, 23, 59, 59, 999)
+
+  const rows = await prisma.transaction.findMany({
+    where: {
+      userId,
+      empresaId: null, // Casa: EM_ABERTO é Casa-SAIDA-only nesta fase
+      type: 'SAIDA',
+      status: 'EM_ABERTO',
+      date: { gte: start, lte: end },
+    },
+    select: {
+      amountCents: true,
+      estimatedCents: true,
+      fixedAccount: { select: { isVariableAmount: true } },
+    },
+  })
+
+  return rows.map((r) => ({
+    amountCents: r.amountCents,
+    estimatedCents: r.estimatedCents,
+    isVariableAmount: r.fixedAccount?.isVariableAmount ?? false,
+  }))
 }

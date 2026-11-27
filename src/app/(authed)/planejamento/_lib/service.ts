@@ -32,6 +32,7 @@ export async function getCasaCategorySpending(
       userId,
       empresaId: null, // Casa
       type: 'SAIDA',
+      status: 'PAGO', // R-1: tetos contam só o que foi pago (gêmeo de visao-geral)
       date: { gte: start, lte: end },
     },
     _sum: { amountCents: true },
@@ -131,6 +132,7 @@ export async function getCasaWeeklyTransactions(
       userId,
       empresaId: null, // Casa
       type: 'SAIDA',
+      status: 'PAGO', // R-1: semanal conta só o que foi pago (gêmeo de visao-geral)
       date: { gte: start, lte: end },
     },
     select: {

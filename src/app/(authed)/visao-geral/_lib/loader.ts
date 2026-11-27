@@ -4,8 +4,14 @@ import {
   getCategorySpending,
   getWeeklySpending,
   getRendaPorOrigem,
+  getEmAbertoCasa,
 } from './service'
 import { computeRestanteMes } from '@/app/(authed)/planejamento/_lib/acompanhamento'
+import {
+  computeComprometido,
+  computePossoGastar,
+  type EmAbertoLinha,
+} from '@/app/(authed)/planejamento/_lib/comprometido'
 import { getEmpresas } from '@/app/(authed)/empresas/_lib/loader'
 import {
   agruparRendaPorOrigem,
@@ -33,6 +39,8 @@ export async function loadDashboardData(
   month: string,
   empresaId: string | null = null
 ) {
+  const isCasa = empresaId === null
+
   const [dinheiroMesCents, totalSpentCents, categorySpending, weeklySpending] =
     await Promise.all([
       getTotalEntradas(userId, month, empresaId),
@@ -43,12 +51,38 @@ export async function loadDashboardData(
 
   const restanteCents = computeRestanteMes(dinheiroMesCents, totalSpentCents)
 
+  // Hero "posso gastar ainda" (10-01, R-1/R-2): só no contexto Casa. EM_ABERTO é
+  // Casa-SAIDA-only — no contexto empresa não lemos em aberto e os campos ficam 0.
+  const emAbertoLinhas: EmAbertoLinha[] = isCasa
+    ? await getEmAbertoCasa(userId, month)
+    : []
+
+  // comprometido = gasto real PAGO (totalSpent) + em aberto (valor certo ou
+  // estimativa). posso gastar = dinheiro do mês − comprometido (pode negativar).
+  const comprometidoCents = computeComprometido(totalSpentCents, emAbertoLinhas)
+  const possoGastarCents = isCasa
+    ? computePossoGastar(dinheiroMesCents, comprometidoCents)
+    : 0
+
+  // Chips do hero (UI-SPEC §1): "Contas fixas" = parcela em aberto comprometida
+  // (comprometido − já pago); "Já pago" = gasto real PAGO; "Variável gasto" = o
+  // gasto PAGO (as fixas só entram no caixa real quando marcadas pagas).
+  const contasFixasCents = comprometidoCents - totalSpentCents
+  const jaPagoCents = totalSpentCents
+  const variavelCents = totalSpentCents
+
   return {
     dinheiroMesCents,
     totalSpentCents,
     restanteCents,
     categorySpending,
     weeklySpending,
+    // Hero (Casa). No contexto empresa comprometido = totalSpent e possoGastar = 0.
+    comprometidoCents,
+    possoGastarCents,
+    contasFixasCents,
+    jaPagoCents,
+    variavelCents,
   }
 }
 
