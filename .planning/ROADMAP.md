@@ -318,11 +318,20 @@ Plans:
 **Goal**: Cada lançamento (Casa e empresa) tem um status de pagamento — `pago` ou `a pagar`/`a receber` — com data de vencimento, para o usuário distinguir o que já saiu/entrou de verdade do que ainda está pendente, e ver quanto ainda falta pagar/receber no mês.
 **Mode:** mvp
 **Depends on**: Phase 2 (lançamentos); conversa direta com a Fase 5 (Calendário de vencimentos) e a projeção de caixa (um "a pagar" com vencimento é uma obrigação futura datada)
-**Status**: Backlog — capturado em 27/11/2026 a pedido do Thaylan; discutir/planejar depois de concluir a Fase 9 (WhatsApp)
-**Decisão de escopo (travada na captura)**: interpretação = **status por lançamento** (não uma lista separada de contas a pagar, nem só previsto×realizado). A pagar com vencimento alimenta o calendário e a projeção.
-**A definir no discuss**: como o status interage com contas fixas (FixedAccount) e com o "dinheiro do mês"/restante (um "a pagar" já conta no restante ou só quando pago?); filtros por status nas telas; reflexo no P&L da empresa (regime de caixa vs. competência); possível migração aditiva de campos `status` + `dueDate` em Transaction.
+**Status**: Em planejamento (prioridade após pausar a Fase 9) — desenho aprovado em 27/11/2026
+**Design**: `docs/superpowers/specs/2026-11-27-casa-pago-a-pagar-design.md` (autoritativo) + mockup aprovado em `.superpowers/brainstorm/.../casa-mes.html`
+**Success Criteria** (what must be TRUE):
 
-**Plans**: TBD
+  1. Toda despesa da Casa tem status `pago`/`em aberto` + vencimento; o formulário de lançamento permite marcar como "em aberto" com vencimento
+  2. As contas fixas entram sozinhas como "em aberto" todo mês (aluguel com valor; luz/água "a definir" com estimativa do mês anterior), sem duplicar, via ação explícita
+  3. "Marcar como pago" numa despesa em aberto (informando o valor real nas "a definir") muda o status sem contar o valor duas vezes
+  4. O número "posso gastar ainda" = dinheiro do mês − (fixas pagas + fixas em aberto + variável); as fixas passam a contar no cálculo (conserta a queixa)
+  5. Gasto real/semanal/tetos por categoria continuam contando só o pago; empresas (P&L/consolidado) não são afetadas
+  6. A Casa aparece no formato do mockup aprovado (hero "posso gastar", contas fixas com status/vencimento, variável da semana com teto)
+
+**Decisão de escopo (travada)**: status por lançamento (abordagem A do design); **fixas + despesas avulsas** podem ficar em aberto nesta versão.
+
+**Plans**: TBD (a planejar — 1 fatia por vez)
 
 ---
 
@@ -340,7 +349,7 @@ Plans:
 | 7. Importação CSV/OFX | 0/? | Not started | - |
 | 8. PWA Polish | 0/? | Not started | - |
 | 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
-| 10. Pago e A Pagar (status de pagamento) | 0/? | Backlog (depois da Fase 9) | - |
+| 10. Pago e A Pagar (status de pagamento) | 0/? | **Em planejamento (desenho aprovado 27/11)** | - |
 
 ---
 
