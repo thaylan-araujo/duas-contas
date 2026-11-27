@@ -26,6 +26,16 @@ export function perguntaCategoria(): string {
   return 'Qual a categoria desse lançamento?'
 }
 
+/**
+ * Categoria não casou com nenhuma EXISTENTE do destino — pergunta oferecendo as
+ * categorias daquele destino (D-04: nunca cria categoria por chat). Lista os
+ * nomes existentes para o usuário escolher. Sem categorias → cai no genérico.
+ */
+export function perguntaCategoriaComOpcoes(nomes: string[]): string {
+  if (nomes.length === 0) return perguntaCategoria()
+  return `Qual a categoria? Opções: ${nomes.join(', ')}.`
+}
+
 /** Relatórios ainda não disponíveis nesta fatia (chegam no 09-03/Fatia 3). */
 export function relatorioIndisponivel(): string {
   return 'Os relatórios por WhatsApp chegam numa próxima atualização.'

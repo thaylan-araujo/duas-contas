@@ -304,7 +304,8 @@ describe('webhook route — multi-turno (C-2: na dúvida, pergunta e completa)',
     expect(serviceMock.clearPendingAction).toHaveBeenCalledWith(PHONE)
     expect(evolutionMock.sendText).toHaveBeenCalledTimes(1)
     const [, text] = evolutionMock.sendText.mock.calls[0]
-    expect(text.replace(/ /g, ' ')).toContain('R$ 50,00')
+    // formatBRL usa NBSP entre "R$" e o número — normaliza qualquer espaço.
+    expect(text.replace(/\s/g, ' ')).toContain('R$ 50,00')
     expect(text).toContain('Casa')
   })
 
