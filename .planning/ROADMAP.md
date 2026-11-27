@@ -331,7 +331,16 @@ Plans:
 
 **Decisão de escopo (travada)**: status por lançamento (abordagem A do design); **fixas + despesas avulsas** podem ficar em aberto nesta versão.
 
-**Plans**: TBD (a planejar — 1 fatia por vez)
+**Plans**: 3 plans (1 fatia por plano)
+Plans:
+**Wave 1**
+
+- [ ] 10-01-PLAN.md — Fatia 1: migração aditiva (status/dueDate/estimatedCents/fixedAccountId + isVariableAmount) + funções puras comprometido/posso gastar + filtro status=PAGO (R-1) + hero "posso gastar ainda" na Casa (C4, C5)
+
+**Wave 2** *(blocked on Wave 1 — depende da migração)*
+
+- [ ] 10-02-PLAN.md — Fatia 2: toggle isVariableAmount + geração mensal idempotente das fixas em aberto + "marcar pago" + bloco Contas fixas com pílula de status (C2, C3, C6)
+- [ ] 10-03-PLAN.md — Fatia 3: toggle pago/em aberto + vencimento no formulário de lançamento (despesas avulsas) (C1)
 
 ---
 
@@ -349,7 +358,7 @@ Plans:
 | 7. Importação CSV/OFX | 0/? | Not started | - |
 | 8. PWA Polish | 0/? | Not started | - |
 | 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
-| 10. Pago e A Pagar (status de pagamento) | 0/? | **Em planejamento (desenho aprovado 27/11)** | - |
+| 10. Pago e A Pagar (status de pagamento) | 0/3 | **Planejado (3 fatias — desenho aprovado 27/11)** | - |
 
 ---
 
