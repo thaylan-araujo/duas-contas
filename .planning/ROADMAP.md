@@ -308,7 +308,7 @@ Plans:
 
 **Plans**: Fatia 1 — 3 plans (em waves 1→2→3)
 - [x] 09-01-PLAN.md — Fundação: migração aditiva (3 tabelas) + SDK Anthropic + exclusão de /api/whatsapp no middleware + funções puras parse/resolve/schema (Wave 0 RED) — completo 2026-11-27
-- [ ] 09-02-PLAN.md — Caminho feliz ponta-a-ponta: webhook (segredo+allowlist+dedupe) → Claude Haiku → resolve → createTransactionService (reuso) → confirmação (C-1, C-3)
+- [x] 09-02-PLAN.md — Caminho feliz ponta-a-ponta: webhook (segredo+allowlist+dedupe) → Claude Haiku → resolve → createTransactionService (reuso) → confirmação (C-1, C-3) — completo 2026-11-27
 - [ ] 09-03-PLAN.md — Multi-turno (pergunta quando incerto + completa na próxima msg, C-2) + setup externo (env/instância Evolution/allowlist) + verificação ponta-a-ponta real
 **UI hint**: no (canal é o WhatsApp; sem telas novas — só setup/env)
 
@@ -327,7 +327,7 @@ Plans:
 | 6. Relatório Mensal | 0/? | Not started | - |
 | 7. Importação CSV/OFX | 0/? | Not started | - |
 | 8. PWA Polish | 0/? | Not started | - |
-| 9. Assistente de WhatsApp (IA) | 1/3 (Fatia 1) | **Em progresso — Onda 1 (09-01) completa** | - |
+| 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
 
 ---
 
