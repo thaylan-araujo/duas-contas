@@ -36,6 +36,7 @@ model User {
   fixedAccounts   FixedAccount[]
   annualExpenses  AnnualExpense[]
   goals           Goal[]
+  whatsappContacts WhatsappContact[]
   createdAt       DateTime         @default(now())
 }
 
@@ -182,4 +183,45 @@ model Goal {
   savedCents  Int      @default(0)
   deadline    String? // 'YYYY-MM' nullable (seed sem prazo)
   createdAt   DateTime @default(now())
+}
+
+// ─── Assistente de WhatsApp (Fase 9 · Fatia 1) ───────────────────────────────
+// Tabelas ADITIVAS (só CREATE TABLE — nenhuma tabela existente é alterada).
+
+// Número autorizado a usar o assistente (allowlist). Liga o telefone ao usuário
+// dono dos dados. consentAt registra o consentimento LGPD do canal. Enquanto o
+// app é single-user, há uma linha ligando o número do Thaylan ao seu userId.
+model WhatsappContact {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  consentAt DateTime
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// Log de mensagens recebidas para idempotência: o id da mensagem da Evolution é
+// único, então uma reentrega do webhook não gera lançamento duplicado.
+model WhatsappInbound {
+  id        String   @id @default(cuid())
+  messageId String   @unique
+  phone     String
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+// Estado do fluxo multi-turno: quando falta um dado (destino/categoria), guarda a
+// extração parcial por telefone até a próxima mensagem completar a ação. expiresAt
+// dá um TTL curto (serverless não guarda memória entre requisições).
+model WhatsappPendingAction {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  kind      String
+  partial   Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
