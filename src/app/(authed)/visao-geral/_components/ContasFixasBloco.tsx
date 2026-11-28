@@ -18,12 +18,19 @@ interface ContasFixasBlocoProps {
   linhas: LinhaContaFixa[]
   /** Há fixas cadastradas? Controla a exibição do botão "gerar contas do mês". */
   temFixasCadastradas: boolean
+  /**
+   * Modo leitura (default false). Quando true, NÃO renderiza nenhum controle que
+   * muta dado — nem "gerar contas do mês", nem "marcar pago", nem o MarcarPagoDialog.
+   * Usado na Visão Geral (só-leitura); as abas de Lançamentos usam o modo interativo.
+   */
+  readOnly?: boolean
 }
 
 export function ContasFixasBloco({
   month,
   linhas,
   temFixasCadastradas,
+  readOnly = false,
 }: ContasFixasBlocoProps) {
   const [isGerando, startGerar] = useTransition()
   const [gerarErro, setGerarErro] = useState('')
@@ -56,7 +63,7 @@ export function ContasFixasBloco({
             {formatBRL(totalCents)} · {emAberto.length} em aberto
           </p>
         </div>
-        {temFixasCadastradas && (
+        {!readOnly && temFixasCadastradas && (
           <Button
             variant="outline"
             onClick={handleGerar}
@@ -69,7 +76,7 @@ export function ContasFixasBloco({
         )}
       </div>
 
-      {gerarErro && (
+      {!readOnly && gerarErro && (
         <p className="mb-3 text-sm text-destructive" role="alert">{gerarErro}</p>
       )}
 
@@ -77,7 +84,7 @@ export function ContasFixasBloco({
         <p className="text-sm text-text-secondary">
           Nenhuma conta fixa neste mês. Lance uma despesa na categoria{' '}
           <span className="font-medium">Contas fixas</span>
-          {temFixasCadastradas
+          {!readOnly && temFixasCadastradas
             ? ' ou use "Gerar contas do mês" para trazer as suas contas fixas cadastradas.'
             : '.'}
         </p>
@@ -123,7 +130,7 @@ export function ContasFixasBloco({
 
                 <StatusPill status={l.status} />
 
-                {l.status === 'EM_ABERTO' && (
+                {!readOnly && l.status === 'EM_ABERTO' && (
                   <Button
                     variant="ghost"
                     onClick={() => setMarcando(l)}
@@ -138,7 +145,7 @@ export function ContasFixasBloco({
         </ul>
       )}
 
-      {marcando && (
+      {!readOnly && marcando && (
         <MarcarPagoDialog
           open={!!marcando}
           onClose={() => setMarcando(null)}

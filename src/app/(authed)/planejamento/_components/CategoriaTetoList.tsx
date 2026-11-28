@@ -10,9 +10,20 @@ import type { CategoriaAcompanhamento } from '../_lib/loader'
 interface CategoriaTetoListProps {
   month: string
   categorias: CategoriaAcompanhamento[]
+  /**
+   * Modo leitura (default false). Quando true, omite o InlineCategoriaTetoEditor
+   * (único controle de edição), mantendo nome, "gastei X de Y", barra de progresso
+   * e o destaque de "estourou". Usado na Visão Geral; a aba Tetos de Lançamentos
+   * usa o modo interativo (com editor).
+   */
+  readOnly?: boolean
 }
 
-export function CategoriaTetoList({ month, categorias }: CategoriaTetoListProps) {
+export function CategoriaTetoList({
+  month,
+  categorias,
+  readOnly = false,
+}: CategoriaTetoListProps) {
   return (
     <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
       <h2 className="mb-1 text-base font-semibold text-text-primary">
@@ -41,11 +52,13 @@ export function CategoriaTetoList({ month, categorias }: CategoriaTetoListProps)
                   <span className="text-sm font-medium text-text-primary">
                     {cat.name}
                   </span>
-                  <InlineCategoriaTetoEditor
-                    month={month}
-                    categoryId={cat.categoryId}
-                    limitCents={cat.limitCents}
-                  />
+                  {!readOnly && (
+                    <InlineCategoriaTetoEditor
+                      month={month}
+                      categoryId={cat.categoryId}
+                      limitCents={cat.limitCents}
+                    />
+                  )}
                 </div>
 
                 {status.temTeto && cat.limitCents !== null ? (
