@@ -358,7 +358,19 @@ Plans:
   5. "Planejamento" não aparece mais como item de menu; o acompanhamento (ver) está na Visão Geral e definir tetos está em Lançamentos; as rotas antigas redirecionam
   6. Nenhuma funcionalidade da Fase 10 foi perdida; o cálculo "posso gastar" não mudou; sem migração de banco
 
-**Plans**: TBD (a planejar — 1 fatia por vez)
+**Plans**: 3 plans (1 fatia por plano; sem migração — só mover/compor + readOnly + wiring de rota/menu)
+Plans:
+**Wave 1**
+
+- [ ] 11-01-PLAN.md — Fatia 1: menu da Casa = Visão Geral · Lançamentos · Metas (Sidebar + BottomNav) + nova rota /metas reaproveitando loadContasFixasData + GoalCard (C4, parte de C5)
+
+**Wave 2** *(blocked on Wave 1)*
+
+- [ ] 11-02-PLAN.md — Fatia 2: Lançamentos vira hub em abas (Lançamentos · Contas fixas · Tetos & categorias) com estado em ?aba=; move ContasFixasBloco interativo + CRUD FixedAccount + tetos para as abas; redirects de /contas-fixas e /planejamento (C2, C3, resto de C5)
+
+**Wave 3** *(blocked on Wave 2)*
+
+- [ ] 11-03-PLAN.md — Fatia 3: Visão Geral só-leitura (prop readOnly em ContasFixasBloco + CategoriaTetoList, sem botões de ação, link para a aba de edição); cálculo posso-gastar e serviços da Fase 10 inalterados (C1, C6)
 
 ---
 
@@ -377,7 +389,7 @@ Plans:
 | 8. PWA Polish | 0/? | Not started | - |
 | 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
 | 10. Pago e A Pagar (status de pagamento) | 3/3 | **Construído — aguardando teste real do usuário** | - |
-| 11. Reorganização da Casa (IA) | 0/? | **Em planejamento (desenho aprovado 27/11)** | - |
+| 11. Reorganização da Casa (IA) | 0/3 | **Planejado (3 fatias — nav+/metas, abas em Lançamentos, Visão Geral só-leitura)** | - |
 
 ---
 
