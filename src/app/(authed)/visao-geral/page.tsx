@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { loadDashboardData, loadRendaFamiliar } from './_lib/loader'
 import { DashboardCards } from './_components/DashboardCards'
@@ -32,6 +33,17 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
   const empresaIdContexto: string | null = empresaId ?? null
 
   const isCasa = empresaIdContexto === null
+
+  // Preserva o contexto de mês/empresa nos atalhos para a aba de edição em
+  // Lançamentos (links de navegação — permitidos na Visão Geral, UI-SPEC).
+  const contextParams = new URLSearchParams()
+  if (month) contextParams.set('month', month)
+  if (empresaId) contextParams.set('empresaId', empresaId)
+  const contextSuffix = contextParams.toString()
+    ? `&${contextParams.toString()}`
+    : ''
+  const editarContasFixasHref = `/lancamentos?aba=contas-fixas${contextSuffix}`
+  const editarTetosHref = `/lancamentos?aba=tetos${contextSuffix}`
 
   // A renda familiar por origem é um conceito da Casa (D-04): só carrega e só
   // renderiza no contexto Casa; no contexto de empresa a Visão Geral mostra o
@@ -81,23 +93,42 @@ export default async function VisaoGeralPage({ searchParams }: PageProps) {
         />
       )}
 
-      {/* Bloco "Contas fixas" (10-02) — logo após o hero, só na Casa. */}
+      {/* Bloco "Contas fixas" (10-02) — logo após o hero, só na Casa.
+          Modo leitura (readOnly): sem botões de ação; a edição fica em Lançamentos. */}
       {isCasa && (
-        <ContasFixasBloco
-          month={currentMonth}
-          linhas={contasFixasLinhas}
-          temFixasCadastradas={temFixasCadastradas}
-        />
+        <div className="flex flex-col gap-2">
+          <ContasFixasBloco
+            month={currentMonth}
+            linhas={contasFixasLinhas}
+            temFixasCadastradas={temFixasCadastradas}
+            readOnly
+          />
+          <Link
+            href={editarContasFixasHref}
+            className="inline-flex min-h-[44px] items-center self-start text-sm font-medium text-casa underline-offset-2 hover:underline"
+          >
+            Editar/gerir contas fixas
+          </Link>
+        </div>
       )}
 
       {/* C6 — bloco "variável da semana com teto" (Fase 3.5) REUSADO inalterado,
           junto do hero + contas-fixas. Conta só o PAGO (R-1). */}
       {isCasa && acompanhamento && (
         <>
-          <CategoriaTetoList
-            month={currentMonth}
-            categorias={acompanhamento.categorias}
-          />
+          <div className="flex flex-col gap-2">
+            <CategoriaTetoList
+              month={currentMonth}
+              categorias={acompanhamento.categorias}
+              readOnly
+            />
+            <Link
+              href={editarTetosHref}
+              className="inline-flex min-h-[44px] items-center self-start text-sm font-medium text-casa underline-offset-2 hover:underline"
+            >
+              Editar tetos
+            </Link>
+          </div>
           <GastoSemanalAuto semanas={acompanhamento.semanas} />
         </>
       )}
