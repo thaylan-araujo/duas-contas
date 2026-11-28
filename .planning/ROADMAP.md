@@ -20,6 +20,7 @@
 - [ ] **Phase 8: PWA Polish** - Mobile refinado, lançamento rápido e instalação PWA
 - [ ] **Phase 9: Assistente de WhatsApp (IA)** — **PRIORIDADE ATUAL** — lançar e consultar pelo WhatsApp via Evolution API + IA (ver docs/superpowers/specs/2026-11-26-whatsapp-assistant-design.md)
 - [ ] **Phase 10: Pago e A Pagar (status de pagamento)** — construído 27/11/2026 (aguardando teste real) — status por lançamento `pago`/`em aberto` + vencimento; contas fixas entram em aberto todo mês; hero "posso gastar ainda" conta as fixas (ver docs/superpowers/specs/2026-11-27-casa-pago-a-pagar-design.md)
+- [ ] **Phase 11: Reorganização da Casa (IA)** — Visão Geral só-leitura; editar tudo em Lançamentos (abas: Lançamentos · Contas fixas · Tetos); Metas vira item próprio; "Planejamento" sai do menu. Sem migração (ver docs/superpowers/specs/2026-11-27-casa-reorganizacao-ia-design.md)
 
 ---
 
@@ -342,6 +343,23 @@ Plans:
 - [x] 10-02-PLAN.md — Fatia 2: toggle isVariableAmount + geração mensal idempotente das fixas em aberto + "marcar pago" + bloco Contas fixas com pílula de status (C2, C3, C6) — completo 2026-11-27
 - [x] 10-03-PLAN.md — Fatia 3: toggle pago/em aberto + vencimento no formulário de lançamento (despesas avulsas) (C1) — completo 2026-11-27
 
+### Phase 11: Reorganização da Casa (IA)
+
+**Goal**: Separar claramente "ver" de "editar" na Casa: a Visão Geral vira um painel só-leitura; toda edição (incluindo contas fixas e tetos) mora em Lançamentos (em abas); Metas vira item próprio; "Planejamento" sai do menu. Reaproveita os componentes existentes — sem migração de banco, sem mudar o cálculo "posso gastar".
+**Mode:** mvp
+**Depends on**: Phase 10 (usa os componentes de status/contas-fixas/hero já construídos)
+**Design**: `docs/superpowers/specs/2026-11-27-casa-reorganizacao-ia-design.md` (autoritativo)
+**Success Criteria** (what must be TRUE):
+
+  1. A Visão Geral da Casa não tem nenhum botão/ação de editar (só leitura): hero "posso gastar", resumo das contas fixas com status, variável da semana + tetos, renda familiar, gráficos
+  2. Lançamentos tem abas: "Lançamentos" (lista + criar/editar/excluir), "Contas fixas" (cadastrar + gerar o mês + marcar pago + valor variável) e os tetos por categoria
+  3. "Marcar pago" e "gerar contas do mês" agora acontecem em Lançamentos (saíram da Visão Geral)
+  4. Metas é um item próprio do menu (metas/reservas), separado das contas fixas
+  5. "Planejamento" não aparece mais como item de menu; o acompanhamento (ver) está na Visão Geral e definir tetos está em Lançamentos; as rotas antigas redirecionam
+  6. Nenhuma funcionalidade da Fase 10 foi perdida; o cálculo "posso gastar" não mudou; sem migração de banco
+
+**Plans**: TBD (a planejar — 1 fatia por vez)
+
 ---
 
 ## Progress
@@ -359,6 +377,7 @@ Plans:
 | 8. PWA Polish | 0/? | Not started | - |
 | 9. Assistente de WhatsApp (IA) | 2/3 (Fatia 1) | **Em progresso — Ondas 1–2 completas; falta 09-03 (multi-turno + setup externo)** | - |
 | 10. Pago e A Pagar (status de pagamento) | 3/3 | **Construído — aguardando teste real do usuário** | - |
+| 11. Reorganização da Casa (IA) | 0/? | **Em planejamento (desenho aprovado 27/11)** | - |
 
 ---
 
