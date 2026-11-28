@@ -7,8 +7,7 @@ import { useContaStore, empresaIdDoContexto } from '@/store/conta'
 import {
   LayoutDashboard,
   ArrowLeftRight,
-  CalendarDays,
-  Receipt,
+  Target,
   TrendingUp,
   CreditCard,
   Layers,
@@ -30,8 +29,7 @@ const navItems: NavItem[] = [
   { label: 'Visão geral', href: '/visao-geral', icon: LayoutDashboard, group: 'ungrouped', context: 'shared' },
   { label: 'Lançamentos', href: '/lancamentos', icon: ArrowLeftRight, group: 'ungrouped', context: 'shared' },
   // Casa (só no contexto Casa)
-  { label: 'Planejamento e semanas', href: '/planejamento', icon: CalendarDays, group: 'Casa', context: 'casa' },
-  { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, group: 'Casa', context: 'casa' },
+  { label: 'Metas', href: '/metas', icon: Target, group: 'Casa', context: 'casa' },
   // Empresa (só no contexto de uma empresa)
   { label: 'Canais e caixa', href: '/canais', icon: TrendingUp, group: 'Empresa', context: 'empresa' },
   { label: 'Consolidado', href: '/consolidado', icon: Layers, group: 'Empresa', context: 'empresa' },

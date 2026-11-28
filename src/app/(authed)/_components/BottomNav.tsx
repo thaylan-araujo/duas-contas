@@ -8,10 +8,9 @@ import { useContaStore, empresaIdDoContexto } from '@/store/conta'
 import {
   LayoutGrid,
   PlusCircle,
-  CalendarDays,
+  Target,
   Briefcase,
   Menu,
-  Receipt,
   CreditCard,
   Layers,
   Calendar,
@@ -36,12 +35,11 @@ interface NavItem {
 const primaryItems: NavItem[] = [
   { label: 'Visão geral', href: '/visao-geral', icon: LayoutGrid, context: 'shared' },
   { label: 'Lançamentos', href: '/lancamentos', icon: PlusCircle, context: 'shared' },
-  { label: 'Planejamento', href: '/planejamento', icon: CalendarDays, context: 'casa' },
+  { label: 'Metas', href: '/metas', icon: Target, context: 'casa' },
   { label: 'Canais e caixa', href: '/canais', icon: Briefcase, isEmpresa: true, context: 'empresa' },
 ]
 
 const sheetItems: NavItem[] = [
-  { label: 'Contas fixas e metas', href: '/contas-fixas', icon: Receipt, context: 'casa' },
   { label: 'Consolidado', href: '/consolidado', icon: Layers, isEmpresa: true, context: 'empresa' },
   { label: 'Dívidas', href: '/dividas', icon: CreditCard, isEmpresa: true, context: 'empresa' },
   { label: 'Calendário', href: '/calendario', icon: Calendar, context: 'shared' },
